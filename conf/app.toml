@@ -1,0 +1,38 @@
+[test]
+[test.filStore]
+filStorePath = "./"
+
+
+[test.server]
+runmode = "debug"
+httpPort = 9600
+readTimeout = 60
+writeTimeout = 60
+cronWithSec = false
+# cronSpec = "*/2 * * * *"
+cronSpec = "*/1 * * * *"
+# 测试群1
+#webhook  = "https://oapi.dingtalk.com/robot/send?access_token=bbea86eb05d17e62f08bd1ab958285e3c5740c076635ad74a9d669bf542b6a08"
+# signSecret = "SECea65e013982df402a8e6cde4ab003f1227a0e618f485ad51e27cc5728787521e"
+
+# 测试群2
+webhook = "https://oapi.dingtalk.com/robot/send?access_token=beef14074d9d5f94a435370aeec797ebb195ddd2c2c9b6a7282f08aa9849731b"
+signSecret = "SECa9aacec17a1616c139326187feb6a74026b98da741761fc78658cb30df4f28f2"
+
+# 正式群
+# webhook  = "https://oapi.dingtalk.com/robot/send?access_token=2027e5c45eb038c9fe07369bb818c79ab2adc00ce7f76e327057b15ee93da7c9"
+# signSecret = "SEC2df7c0982b0850ad6421432515bfb1e176489c59a83719e599f785192e6f3e9e"
+
+[test.database]
+type = "mysql"
+#user = "root"
+#password = "123456"
+#host = "localhost:3306"
+
+user = "root"
+password = "thxy"
+host = "47.102.146.8:3306"
+
+name = "thxy"
+
+

@@ -1,0 +1,35 @@
+package model
+
+type CourseFile struct {
+	Model
+	CourseId    int    `json:"course_id"`
+	Title       string `json:"title"`
+	ImgSrc      string `json:"img_src"`
+	Mp3Url      string `json:"mp3_url"`
+	Mp3FileName string `json:"mp3_file_name"`
+	Introduce   string `json:"introduce"`
+	Provider    string `json:"provider"`
+	GroupId     int    `json:"group_id"`
+	WordFilePath string `json:"word_file_path"`
+
+}
+
+func (CourseFile) TableName() string {
+	return "course_file"
+}
+
+func init() {
+	autoMigrateModels = append(autoMigrateModels, &CourseFile{})
+}
+
+func FindCourseFileById(id int) (a *CourseFile, err error) {
+	a = new(CourseFile)
+	err = db.Debug().Model(&CourseFile{}).Select("*").Where("id = ? ", id).Find(a).Error
+	return
+}
+
+func FindCourseFileByCourseId(courseId int) (a []*CourseFile, err error) {
+	//a = new(CourseFile)
+	err = db.Debug().Model(&CourseFile{}).Select("*").Where("course_id = ? ", courseId).Find(&a).Error
+	return
+}
