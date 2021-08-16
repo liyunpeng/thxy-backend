@@ -1,7 +1,6 @@
 [test]
 [test.filStore]
-filStorePath = "./"
-
+filStorePath = "./data/"
 
 [test.server]
 runmode = "debug"

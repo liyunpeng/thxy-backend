@@ -1,3 +1,5 @@
 .idea/
 forcepool-errors.log
 *.mp3
+.DS_Store
+data/

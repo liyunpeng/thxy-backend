@@ -113,9 +113,9 @@ func FindCourseByTypeId(c *gin.Context) {
 
 	c.JSON(200, cc)
 }
-// 多文件上传
+
 func MultiUpload(context *gin.Context) {
-	// 多文件上传需要先解析form表单数据
+
 	form, err := context.MultipartForm()
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{
@@ -123,9 +123,11 @@ func MultiUpload(context *gin.Context) {
 		})
 	}
 	// 多个文件上传，要用同一个key
-	files := form.File["files"]
-	for _, file := range files {
-		dst := fmt.Sprint(`./`+file.Filename)
+	//files := form.File["files"]
+	files := form.File
+	for _, filea := range files {
+		file := filea[0]
+		dst := fmt.Sprint(setting.TomlConfig.Test.FilStore.FileStorePath +file.Filename)
 		// 保存文件至指定路径
 		err = context.SaveUploadedFile(file, dst)
 		if err != nil {
