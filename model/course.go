@@ -22,3 +22,28 @@ func FindCourseByTypeId(typeId int) (a []*Course, err error) {
 	err = db.Debug().Model(&Course{}).Select("*").Where("type_id = ? ", typeId).Find(&a).Error
 	return
 }
+
+type CourseTitleItem struct {
+	Id     int    `gorm:"json:"id"`
+	TypeId int    `json:"type_id"`
+	Title  string `json:"title"`
+}
+
+type CourseTypeItem struct {
+	//Id     int    `json:"id"`
+	TypeId int    `json:"type_id"`
+	Name   string `json:"name"`
+}
+
+func GetAllCourseIds() (a []*CourseTitleItem, err error) {
+
+	err = db.Debug().Raw("select id, type_id, title from course").Find(&a).Error
+	return
+}
+
+func GetAllCourseGroup() (a []*CourseTypeItem, err error) {
+	s := "select  c.type_id, t.name from course c inner join course_type t on c.type_id = t.id group by c.type_id"
+	//s := "select c.id,  c.type_id, t.name from course c inner join course_type t on c.type_id = t.id group by t.id "
+	err = db.Debug().Raw(s).Find(&a).Error
+	return
+}
