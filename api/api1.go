@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 	"thxy/logger"
 	"thxy/model"
 	"thxy/setting"
@@ -71,6 +72,51 @@ func FindCourseFileByCourseId(c *gin.Context) {
 	c.JSON(200, cc)
 }
 
+func FindCourseFileByCourseIdOk(c *gin.Context) {
+	a := new(types.CourseFileReqeustOkhttp)
+	c.Bind(a)
+
+
+	a.Id = "1"
+	id, _ := strconv.Atoi(a.Id)
+
+
+	//id = "1"
+	cc, err := model.FindCourseFileByCourseId(id)
+
+	if err != nil {
+		c.JSON(501, err)
+	}
+
+	logger.Info.Println(cc)
+
+	type Song struct {
+		Songname string `json:"songname"`
+		Artistname string `json:"artistname"`
+		Songid	string 	`json:"songid"`
+	}
+
+	a1 := make([]Song, 1, 1)
+	a1[0] = Song{
+		Songid: "1",
+		Songname: "name11111111",
+		Artistname: "art",
+
+	}
+
+
+	type Resp struct {
+		Song []Song	`json:"song"`
+	}
+
+	ret1 := &Resp{
+		Song: a1,
+	}
+
+
+	c.JSON(200, ret1)
+}
+
 func FindCourseFileById(c *gin.Context) {
 	a := new(types.CourseFileReqeust)
 	c.Bind(a)
@@ -95,6 +141,27 @@ func GetCourseTypes(c *gin.Context) {
 	}
 
 	c.JSON(200, cc)
+}
+
+func GetCourseTypesOk(c *gin.Context) {
+	a := new(types.CourseFileReqeust)
+	c.Bind(a)
+
+	cc, err := model.FindAllCourseTypes()
+
+	if err != nil {
+		c.JSON(501, err)
+	}
+
+	type Resp struct {
+		CouseTypes []*model.CourseType `json:"coursetypes"`
+	}
+
+	res := &Resp{
+		CouseTypes: cc,
+
+	}
+	c.JSON(200, res)
 }
 
 func GetAllCourseIds(c *gin.Context) {
@@ -170,7 +237,41 @@ func FindCourseByTypeId(c *gin.Context) {
 	c.JSON(200, cc)
 }
 
+func FindCourseByTypeIdOkhttp(c *gin.Context) {
+	a := new(types.CourseFileReqeustOkhttp)
+	c.Bind(a)
+
+
+	reauestId := c.Request.PostForm["id"]
+	if reauestId == nil {
+		c.JSON(501, "c.Request.PostForm[\"id\"] 为空")
+	}
+	id, _ := strconv.Atoi(reauestId[0])
+	cc, err := model.FindCourseByTypeId(id)
+
+	if err != nil {
+		c.JSON(501, err)
+	}
+
+	type Resp struct {
+		Course []*model.Course `json:"courseList"`
+	}
+
+	ret := &Resp{
+		Course: cc,
+	}
+	c.JSON(200, ret)
+}
+
 func MultiUpload(context *gin.Context) {
+	type AAA struct {
+		CourseId  int `json:"courseId"`
+	}
+	r := new(AAA)
+
+	context.Bind(r)
+
+	logger.Info.Println("r:", r)
 
 	form, err := context.MultipartForm()
 	if err != nil {
@@ -181,11 +282,17 @@ func MultiUpload(context *gin.Context) {
 	}
 	// 多个文件上传，要用同一个key
 	//files := form.File["files"]
+	//for k, v := range form {
+	//	fmt.Println("key is: ", k)
+	//	fmt.Println("val is: ", v)
+	//}
+
 	files := form.File
 	for _, filea := range files {
 		file := filea[0]
 		dst := fmt.Sprint(setting.TomlConfig.Test.FilStore.FileStorePath + file.Filename)
 		// 保存文件至指定路径
+		//file.
 		err = context.SaveUploadedFile(file, dst)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{

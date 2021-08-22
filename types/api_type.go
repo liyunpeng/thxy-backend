@@ -9,6 +9,10 @@ type CourseFileReqeust struct {
 	Id int `json:"id"`
 }
 
+type CourseFileReqeustOkhttp struct {
+	Id string `json:"id"`
+}
+
 type DownloadReqeust struct {
 	Id int `json:"id"`
 	FileName string `json:"file_name"`

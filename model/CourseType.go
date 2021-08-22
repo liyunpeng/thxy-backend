@@ -15,8 +15,7 @@ func init() {
 	autoMigrateModels = append(autoMigrateModels, &CourseType{})
 }
 
-func FindAllCourseTypes() (a []*CourseType, err error) {
-	//a = new(CourseFile)
-	err = db.Debug().Model(&CourseType{}).Select("*").Find(&a).Error
+func FindAllCourseTypes() (courseTypes []*CourseType, err error) {
+	err = db.Debug().Model(&CourseType{}).Select("*").Find(&courseTypes).Error
 	return
 }

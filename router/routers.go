@@ -19,7 +19,7 @@ func InitRouter() *gin.Engine {
 	//	gin.SetMode(gin.ReleaseMode)
 	//}
 	r := gin.New()
-	//r.Use(gin.Logger())
+	r.Use(gin.Logger())
 	//r.Use(gin.Recovery())
 	//cors.
 	r.Use(cors.AddCorsHeaders())
@@ -53,9 +53,13 @@ func InitRouter() *gin.Engine {
 			adminGroup.GET("/fileDownload", api.FileDownload)
 			adminGroup.POST("/multiUpload", api.MultiUpload)
 			adminGroup.POST("/getCourseTypes", api.GetCourseTypes)
+			adminGroup.POST("/getCourseTypesOk", api.GetCourseTypesOk)
 			adminGroup.POST("/findCourseByTypeId", api.FindCourseByTypeId)
 			adminGroup.POST("/findCourseFileById", api.FindCourseFileById)
+			adminGroup.POST("/findCourseByTypeIdOk", api.FindCourseByTypeIdOkhttp)
 			adminGroup.POST("/findCourseFileByCourseId", api.FindCourseFileByCourseId)
+			adminGroup.POST("/findCourseFileByCourseIdOk", api.FindCourseFileByCourseIdOk)
+
 			//adminGroup.POST("/fileItem", api.PaymentOrders)
 
 		}
