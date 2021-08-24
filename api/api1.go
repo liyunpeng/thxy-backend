@@ -76,13 +76,20 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 	a := new(types.CourseFileReqeustOkhttp)
 	c.Bind(a)
 
+	//
+	//a.Id = "1"
+	//id, _ := strconv.Atoi(a.Id)
+	//
+	//a := new(types.CourseFileReqeustOkhttp)
+	//c.Bind(a)
+	reauestId := c.Request.PostForm["course_id"]
+	if reauestId == nil {
+		c.JSON(501, "c.Request.PostForm[\"id\"] 为空")
+	}
 
-	a.Id = "1"
-	id, _ := strconv.Atoi(a.Id)
-
-
+	id1, _ := strconv.Atoi(reauestId[0])
 	//id = "1"
-	cc, err := model.FindCourseFileByCourseId(id)
+	cc, err := model.FindCourseFileByCourseId(id1)
 
 	if err != nil {
 		c.JSON(501, err)
@@ -90,27 +97,27 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 
 	logger.Info.Println(cc)
 
-	type Song struct {
-		Songname string `json:"songname"`
-		Artistname string `json:"artistname"`
-		Songid	string 	`json:"songid"`
-	}
-
-	a1 := make([]Song, 1, 1)
-	a1[0] = Song{
-		Songid: "1",
-		Songname: "name11111111",
-		Artistname: "art",
-
-	}
+	//type Song struct {
+	//	Songname string `json:"songname"`
+	//	Artistname string `json:"artistname"`
+	//	Songid	string 	`json:"songid"`
+	//}
+	//
+	//a1 := make([]Song, 1, 1)
+	//a1[0] = Song{
+	//	Songid: "1",
+	//	Songname: "name11111111",
+	//	Artistname: "art",
+	//
+	//}
 
 
 	type Resp struct {
-		Song []Song	`json:"song"`
+		CourseFileList []*model.CourseFile	`json:"courseFileList"`
 	}
 
 	ret1 := &Resp{
-		Song: a1,
+		CourseFileList: cc,
 	}
 
 
