@@ -293,22 +293,20 @@ func MultiUpload(context *gin.Context) {
 	//}
 
 	files := form.File
-	reauestId := context.Request.PostForm["courseId"]
-	sss := reauestId[0]
+	courseIdStr := context.Request.PostForm["courseId"][0]
+	courseId, _ := strconv.Atoi(courseIdStr)
 
-	courseId, _ := strconv.Atoi(sss)
 	tx := model.GetDB()
 	tx.Begin()
 	for _, filea := range files {
 		file := filea[0]
-		re := regexp.MustCompile("[0-9]+")
-		//fmt.Println()
+		regExp := regexp.MustCompile("[0-9]+")
 
 		titleArr := strings.Split(file.Filename, ".")
-
 		title := titleArr[0]
-		a1 := re.FindAllString(title, -1)
-		number, err := strconv.Atoi(a1[0])
+
+		numberStr := regExp.FindAllString(title, -1)
+		number, err := strconv.Atoi(numberStr[0])
 
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{
@@ -316,11 +314,10 @@ func MultiUpload(context *gin.Context) {
 			})
 		}
 		courseFile := &model.CourseFile{
-			//CourseId: r.CourseId,
-			CourseId: courseId,
-			Title:    title,
-			Number:   number,
-			Mp3Url:  setting.TomlConfig.Test.Server.FileDownload,
+			CourseId:    courseId,
+			Title:       title,
+			Number:      number,
+			Mp3Url:      setting.TomlConfig.Test.Server.FileDownload,
 			Mp3FileName: file.Filename,
 		}
 
@@ -332,16 +329,12 @@ func MultiUpload(context *gin.Context) {
 			tx.Rollback()
 		}
 	}
-
 	tx.Commit()
 
 	for _, filea := range files {
 		file := filea[0]
-
 		dst := fmt.Sprint(setting.TomlConfig.Test.FilStore.FileStorePath + file.Filename)
-		// 保存文件至指定路径
-		//file.
-
+		logger.Debug.Println("dst: ", dst)
 		err = context.SaveUploadedFile(file, dst)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{
@@ -349,8 +342,9 @@ func MultiUpload(context *gin.Context) {
 			})
 		}
 	}
+
 	context.JSON(http.StatusOK, gin.H{
 		"msg":      "upload file succ.",
-		"filepath": `./`,
+		"filepath": setting.TomlConfig.Test.FilStore.FileStorePath,
 	})
 }
