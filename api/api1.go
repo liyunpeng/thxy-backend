@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 	"thxy/logger"
 	"thxy/model"
 	"thxy/setting"
@@ -111,15 +113,13 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 	//
 	//}
 
-
 	type Resp struct {
-		CourseFileList []*model.CourseFile	`json:"courseFileList"`
+		CourseFileList []*model.CourseFile `json:"courseFileList"`
 	}
 
 	ret1 := &Resp{
 		CourseFileList: cc,
 	}
-
 
 	c.JSON(200, ret1)
 }
@@ -166,7 +166,6 @@ func GetCourseTypesOk(c *gin.Context) {
 
 	res := &Resp{
 		CouseTypes: cc,
-
 	}
 	c.JSON(200, res)
 }
@@ -248,7 +247,6 @@ func FindCourseByTypeIdOkhttp(c *gin.Context) {
 	a := new(types.CourseFileReqeustOkhttp)
 	c.Bind(a)
 
-
 	reauestId := c.Request.PostForm["id"]
 	if reauestId == nil {
 		c.JSON(501, "c.Request.PostForm[\"id\"] 为空")
@@ -271,10 +269,10 @@ func FindCourseByTypeIdOkhttp(c *gin.Context) {
 }
 
 func MultiUpload(context *gin.Context) {
-	type AAA struct {
-		CourseId  int `json:"courseId"`
+	type Request struct {
+		CourseId int `json:"courseId"`
 	}
-	r := new(AAA)
+	r := new(Request)
 
 	context.Bind(r)
 
@@ -295,11 +293,55 @@ func MultiUpload(context *gin.Context) {
 	//}
 
 	files := form.File
+	reauestId := context.Request.PostForm["courseId"]
+	sss := reauestId[0]
+
+	courseId, _ := strconv.Atoi(sss)
+	tx := model.GetDB()
+	tx.Begin()
 	for _, filea := range files {
 		file := filea[0]
+		re := regexp.MustCompile("[0-9]+")
+		//fmt.Println()
+
+		titleArr := strings.Split(file.Filename, ".")
+
+		title := titleArr[0]
+		a1 := re.FindAllString(title, -1)
+		number, err := strconv.Atoi(a1[0])
+
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"msg": fmt.Sprintf("ERROR: Atoi failed. %s", err),
+			})
+		}
+		courseFile := &model.CourseFile{
+			//CourseId: r.CourseId,
+			CourseId: courseId,
+			Title:    title,
+			Number:   number,
+			Mp3Url:  setting.TomlConfig.Test.Server.FileDownload,
+			Mp3FileName: file.Filename,
+		}
+
+		err = model.InsertCourseFile(tx, courseFile)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"msg": fmt.Sprintf("ERROR: InsertCourseFileinsert failed. %s", err),
+			})
+			tx.Rollback()
+		}
+	}
+
+	tx.Commit()
+
+	for _, filea := range files {
+		file := filea[0]
+
 		dst := fmt.Sprint(setting.TomlConfig.Test.FilStore.FileStorePath + file.Filename)
 		// 保存文件至指定路径
 		//file.
+
 		err = context.SaveUploadedFile(file, dst)
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{

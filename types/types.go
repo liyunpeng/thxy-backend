@@ -9,6 +9,7 @@ type TomlServer struct {
 	Webhook    string
 	SignSecret string
 	CronSpec    string
+	FileDownload    string
 }
 type TomlDatabase struct {
 	Type        string

@@ -43,6 +43,10 @@ func Setup() {
 
 }
 
+
+func GetDB()(*gorm.DB) {
+	return db;
+}
 // CloseDB closes database connection (unnecessary)
 func CloseDB() {
 	defer func() {

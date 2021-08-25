@@ -8,6 +8,7 @@ httpPort = 9600
 readTimeout = 60
 writeTimeout = 60
 cronWithSec = false
+fileDownload = "http://47.102.146.8:8082/api/fileDownload"
 # cronSpec = "*/2 * * * *"
 cronSpec = "*/1 * * * *"
 # 测试群1
