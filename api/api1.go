@@ -61,6 +61,26 @@ func FileUpload(context *gin.Context) {
 	})
 }
 
+func GetLatest(c *gin.Context) {
+
+
+	cc, err := model.FindCourseFileListLatest(10)
+
+	if err != nil {
+		c.JSON(501, err)
+	}
+
+	type Resp struct {
+		CourseFileList []*model.CourseFile `json:"courseFileList"`
+	}
+
+	ret1 := &Resp{
+		CourseFileList: cc,
+	}
+
+	c.JSON(200, ret1)
+}
+
 func FindCourseFileByCourseId(c *gin.Context) {
 	a := new(types.CourseFileReqeust)
 	c.Bind(a)

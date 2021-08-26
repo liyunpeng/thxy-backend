@@ -36,6 +36,12 @@ func FindCourseFileByCourseId(courseId int) (a []*CourseFile, err error) {
 	return
 }
 
+func FindCourseFileListLatest(limit int) (a []*CourseFile, err error) {
+	//a = new(CourseFile)
+	err = db.Debug().Model(&CourseFile{}).Select("*").Order(" id desc ").Find(&a).Limit(limit).Error
+	return
+}
+
 func InsertCourseFile (tx *gorm.DB, c *CourseFile) (err error) {
 	err = tx.Debug().Model(&CourseFile{}).Create(c).Error
 	return
