@@ -81,6 +81,26 @@ func GetLatest(c *gin.Context) {
 	c.JSON(200, ret1)
 }
 
+func GetConfig(c *gin.Context) {
+
+
+	cc, err := model.FindConfig()
+
+	if err != nil {
+		c.JSON(501, err)
+	}
+
+	type Resp struct {
+		Config *model.Config `json:"config"`
+	}
+
+	//ret1 := &Resp{
+	//	Config: cc,
+	//}
+
+	c.JSON(200, cc)
+}
+
 func FindCourseFileByCourseId(c *gin.Context) {
 	a := new(types.CourseFileReqeust)
 	c.Bind(a)
@@ -335,9 +355,9 @@ func MultiUpload(context *gin.Context) {
 		}
 		courseFile := &model.CourseFile{
 			CourseId:    courseId,
-			Title:       title,
+			//Title:       title,
 			Number:      number,
-			Mp3Url:      setting.TomlConfig.Test.Server.FileDownload,
+			//Mp3Url:      setting.TomlConfig.Test.Server.FileDownload,
 			Mp3FileName: file.Filename,
 		}
 

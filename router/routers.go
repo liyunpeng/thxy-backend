@@ -49,6 +49,7 @@ func InitRouter() *gin.Engine {
 		{
 			adminGroup.POST("/login", api.Login)
 			adminGroup.POST("/fileUpload", api.FileUpload)
+
 			adminGroup.POST("/getAllCourseIds", api.GetAllCourseIds)
 			adminGroup.GET("/fileDownload", api.FileDownload)
 			adminGroup.POST("/multiUpload", api.MultiUpload)
@@ -59,6 +60,7 @@ func InitRouter() *gin.Engine {
 			adminGroup.POST("/findCourseByTypeIdOk", api.FindCourseByTypeIdOkhttp)
 			adminGroup.POST("/findCourseFileByCourseId", api.FindCourseFileByCourseId)
 			adminGroup.POST("/getLatest", api.GetLatest)
+			adminGroup.POST("/getConfig", api.GetConfig)
 			adminGroup.POST("/findCourseFileByCourseIdOk", api.FindCourseFileByCourseIdOk)
 
 			//adminGroup.POST("/fileItem", api.PaymentOrders)

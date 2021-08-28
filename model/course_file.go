@@ -6,9 +6,9 @@ type CourseFile struct {
 	Model
 	CourseId     int    `json:"course_id"`
 	Number       int    `json:"number"` // 第几节课
-	Title        string `json:"title"`
+	//Title        string `json:"title"`
 	ImgSrc       string `json:"img_src"`
-	Mp3Url       string `json:"mp3_url"`
+	//Mp3Url       string `json:"mp3_url"`
 	Mp3FileName  string `json:"mp3_file_name"`
 	Introduce    string `json:"introduce"`
 	Provider     string `json:"provider"`
