@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -68,6 +69,7 @@ func GetLatest(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(501, err)
+		return
 	}
 
 	type Resp struct {
@@ -79,6 +81,54 @@ func GetLatest(c *gin.Context) {
 	}
 
 	c.JSON(200, ret1)
+}
+
+func UpdateUserListenedFiles(c *gin.Context) {
+	a := new(types.UserListenedFilesRequest)
+	c.Bind(a)
+
+	code := a.Code
+	courseId := a.CourseId
+	ret, err := model.FindUserListenedCourseByUserCodeAndCourseId(code, courseId)
+	if err != nil {
+		c.JSON(501, err)
+		return
+	}
+	ul := make([]*types.ListenedFile, 1)
+	if len(ret) > 0 {
+		json.Unmarshal([]byte(ret[0].ListenedFiles), ul)
+
+		ul = append(ul,  a.ListenedFile)
+
+		ulStr, _ := json.Marshal(ul)
+
+		err = model.UpdateUserListenedCourseByUserCodeAndCourseId( string(ulStr), code, courseId )
+	}else {
+		ul[0] = a.ListenedFile
+		ulStr, _ := json.Marshal(ul)
+
+		ulc := &model.UserListenedCourse{
+			Code: code,
+			CourseId:  courseId,
+			ListenedFiles: string(ulStr),
+		}
+
+		tx := model.GetDB().Begin()
+
+		err = model.InsertUserListenedCourse(tx,  ulc )
+
+		if err != nil {
+			 tx.Rollback()
+			 c.JSON(500, nil)
+		}
+
+		tx.Commit()
+	}
+
+
+
+	c.JSON(200, nil)
+	return
 }
 
 func GetConfig(c *gin.Context) {
@@ -109,6 +159,7 @@ func FindCourseFileByCourseId(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(501, err)
+		return
 	}
 
 	c.JSON(200, cc)

@@ -5,11 +5,11 @@ type AppConfig struct {
 	Test TomlEnv
 }
 type TomlServer struct {
-	Host       string
-	Webhook    string
-	SignSecret string
-	CronSpec    string
-	FileDownload    string
+	Host         string
+	Webhook      string
+	SignSecret   string
+	CronSpec     string
+	FileDownload string
 }
 type TomlDatabase struct {
 	Type        string
@@ -29,7 +29,6 @@ type TomlRedis struct {
 type TomlFileStore struct {
 	FileStorePath string
 }
-
 
 type TomlEnv struct {
 	FilStore TomlFileStore

@@ -7,6 +7,7 @@ type User struct {
 	Code    string `json:"code" gorm:"size:40;comment:'用户编码'"`
 	Account string `json:"account" gorm:"size:40;comment:'用户账号'"`
 	Phone   string `json:"phone" gorm:"size:11;comment:'手机号'"`
+	ListenedCourseIds string `json:"listened_course_ids" gorm:"size:256;comment:''"`
 }
 
 func (User) TableName() string {

@@ -61,6 +61,7 @@ func InitRouter() *gin.Engine {
 			adminGroup.POST("/findCourseFileByCourseId", api.FindCourseFileByCourseId)
 			adminGroup.POST("/getLatest", api.GetLatest)
 			adminGroup.POST("/getConfig", api.GetConfig)
+			adminGroup.POST("/updateUserListenedFiles", api.UpdateUserListenedFiles)
 			adminGroup.POST("/findCourseFileByCourseIdOk", api.FindCourseFileByCourseIdOk)
 
 			//adminGroup.POST("/fileItem", api.PaymentOrders)

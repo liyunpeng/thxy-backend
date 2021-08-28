@@ -4,7 +4,6 @@ type Response1 struct {
 	AccessToken string `json:"access_token"`
 }
 
-
 type CourseFileReqeust struct {
 	Id int `json:"id"`
 }
@@ -14,6 +13,17 @@ type CourseFileReqeustOkhttp struct {
 }
 
 type DownloadReqeust struct {
-	Id int `json:"id"`
+	Id       int    `json:"id"`
 	FileName string `json:"file_name"`
+}
+
+type ListenedFile struct {
+	CourseFileId    int     `json:"cfi"`  // 为了节约数据库存储空间
+	ListenedPercent float32 `json:"pc"`
+}
+
+type UserListenedFilesRequest struct {
+	Code         string       `json:"code"`
+	CourseId     int          `json:"course_id"`
+	ListenedFile *ListenedFile `json:"listened_file"`
 }
