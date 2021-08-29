@@ -2,7 +2,7 @@ package model
 
 import "github.com/jinzhu/gorm"
 
-type UserListenedCourse struct {
+type UserListenedCourseFile struct {
 	Model
 	//Openid    string           `json:"openid" gorm:"unique_index:idx_openid;size:255;comment:''"`
 	Code string `json:"code" gorm:"index:idx_code; size:40;comment:'用户编码'"`
@@ -12,21 +12,21 @@ type UserListenedCourse struct {
 	ListenedFiles string `json:"listened_files" gorm:"size:1024;comment:'用户账号'"`
 }
 
-func (UserListenedCourse) TableName() string {
+func (UserListenedCourseFile) TableName() string {
 	return "user_listened_course"
 }
 
 func init() {
-	autoMigrateModels = append(autoMigrateModels, &UserListenedCourse{})
+	autoMigrateModels = append(autoMigrateModels, &UserListenedCourseFile{})
 }
 
-func InsertUserListenedCourse(tx *gorm.DB, u *UserListenedCourse) (err error) {
-	err = tx.Debug().Model(&UserListenedCourse{}).Create(u).Error
+func InsertUserListenedCourse(tx *gorm.DB, u *UserListenedCourseFile) (err error) {
+	err = tx.Debug().Model(&UserListenedCourseFile{}).Create(u).Error
 	return
 }
 
-func FindUserListenedCourseByUserCodeAndCourseId(code string, courseId int)  (  a []*UserListenedCourse, err error) {
-	err = db.Model(&UserListenedCourse{}).Select("*").Where(" code = ? and course_id = ? ", code, courseId).Find(&a).Error
+func FindUserListenedCourseByUserCodeAndCourseId(code string, courseId int)  (  a []*UserListenedCourseFile, err error) {
+	err = db.Model(&UserListenedCourseFile{}).Select("*").Where(" code = ? and course_id = ? ", code, courseId).Find(&a).Error
 	return
 }
 

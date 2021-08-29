@@ -12,7 +12,7 @@ type CourseFile struct {
 	Provider        string  `json:"provider"`
 	GroupId         int     `json:"group_id"`
 	WordFilePath    string  `json:"word_file_path"`
-	ListenedPercent float32 `json:"listened_percent" gorm:"-"`
+	ListenedPercent int `json:"listened_percent" gorm:"-"`
 }
 
 func (CourseFile) TableName() string {

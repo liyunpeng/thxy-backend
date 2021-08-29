@@ -19,7 +19,7 @@ type DownloadReqeust struct {
 
 type ListenedFile struct {
 	CourseFileId    int     `json:"cfi"`  // 为了节约数据库存储空间
-	ListenedPercent float32 `json:"pc"`
+	ListenedPercent int `json:"pc"`
 }
 
 type UserListenedFilesRequest struct {

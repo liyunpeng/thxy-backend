@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"thxy/logger"
@@ -83,43 +84,57 @@ func GetLatest(c *gin.Context) {
 }
 
 func UpdateUserListenedFiles(c *gin.Context) {
-	a := new(types.UserListenedFilesRequest)
-	c.Bind(a)
+	request := new(types.UserListenedFilesRequest)
+	c.Bind(request)
 
-	code := a.Code
-	courseId := a.CourseId
+	code := request.Code
+	courseId := request.CourseId
 	ret, err := model.FindUserListenedCourseByUserCodeAndCourseId(code, courseId)
 	if err != nil {
 		c.JSON(501, err)
 		return
 	}
-	ul := make([]*types.ListenedFile, 0)
+
+	userListenedFiles := make([]*types.ListenedFile, 0)
 	if len(ret) > 0 {
-		//uldb := make([]*types.ListenedFile, 0)
 
-		json.Unmarshal([]byte(ret[0].ListenedFiles), &ul)
 
+		//cMap := make(map[int]*model.UserListenedCourseFile, len(ret))
+		//for _, v := range ret {
+		//	if _, isExist := cMap[v.Id]; !isExist{
+		//		cMap[v.Id] = v
+		//	}
+		//
+		//}
+
+		json.Unmarshal([]byte(ret[0].ListenedFiles), &userListenedFiles)
 		found := false
-		for k, v := range ul {
-			if v.CourseFileId == a.CourseId {
-				ul[k].ListenedPercent = a.ListenedFile.ListenedPercent
+		for k, v := range userListenedFiles {
+
+			//if  _, isExxist := cMap[v.CourseFileId]; isExxist {
+			//	cMap[v.CourseFileId]
+			//
+			//}
+
+			if v.CourseFileId == request.ListenedFile.CourseFileId {
+				userListenedFiles[k].ListenedPercent = request.ListenedFile.ListenedPercent
 				found = true
 				break
 			}
 		}
 
 		if found == false {
-			ul = append(ul, a.ListenedFile)
+			userListenedFiles = append(userListenedFiles, request.ListenedFile)
 		}
 
-		ulStr, _ := json.Marshal(ul)
+		ulStr, _ := json.Marshal(userListenedFiles)
 		err = model.UpdateUserListenedCourseByUserCodeAndCourseId(string(ulStr), code, courseId)
 	} else {
-		ul = append(ul, a.ListenedFile)
+		userListenedFiles = append(userListenedFiles, request.ListenedFile)
 
-		ulStr, _ := json.Marshal(ul)
+		ulStr, _ := json.Marshal(userListenedFiles)
 
-		ulc := &model.UserListenedCourse{
+		ulc := &model.UserListenedCourseFile{
 			Code:          code,
 			CourseId:      courseId,
 			ListenedFiles: string(ulStr),
@@ -217,13 +232,20 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 		if _, isExist :=   courseFileMap[v.CourseFileId]; isExist {
 			courseFileMap[v.CourseFileId].ListenedPercent = v.ListenedPercent
 		}
-
 	}
 
 	cc := make([]*model.CourseFile, 0)
 	for _, v :=  range courseFileMap{
 		cc = append(cc, v)
 	}
+
+	sort.Slice(cc, func(i, j int) bool {
+		if cc[i].Number < cc[j].Number{
+			return true
+		}else{
+			return false
+		}
+	})
 
 	logger.Info.Println(courseFiles)
 
