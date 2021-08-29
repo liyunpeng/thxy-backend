@@ -31,7 +31,7 @@ func FindUserListenedCourseByUserCodeAndCourseId(code string, courseId int)  (  
 }
 
 func UpdateUserListenedCourseByUserCodeAndCourseId( listenedFiles string , code string, courseId int)  ( err error) {
-	err = db.Exec(" update user_listened_course set listened_files = ?  where code = ? and course_id = ? ",
+	err = db.Debug().Exec(" update user_listened_course set listened_files = ?  where code = ? and course_id = ? ",
 		listenedFiles, code, courseId).Error
 	return
 }

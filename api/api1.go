@@ -64,7 +64,6 @@ func FileUpload(context *gin.Context) {
 
 func GetLatest(c *gin.Context) {
 
-
 	cc, err := model.FindCourseFileListLatest(10)
 
 	if err != nil {
@@ -94,45 +93,55 @@ func UpdateUserListenedFiles(c *gin.Context) {
 		c.JSON(501, err)
 		return
 	}
-	ul := make([]*types.ListenedFile, 1)
+	ul := make([]*types.ListenedFile, 0)
 	if len(ret) > 0 {
-		json.Unmarshal([]byte(ret[0].ListenedFiles), ul)
+		//uldb := make([]*types.ListenedFile, 0)
 
-		ul = append(ul,  a.ListenedFile)
+		json.Unmarshal([]byte(ret[0].ListenedFiles), &ul)
+
+		found := false
+		for k, v := range ul {
+			if v.CourseFileId == a.CourseId {
+				ul[k].ListenedPercent = a.ListenedFile.ListenedPercent
+				found = true
+				break
+			}
+		}
+
+		if found == false {
+			ul = append(ul, a.ListenedFile)
+		}
 
 		ulStr, _ := json.Marshal(ul)
+		err = model.UpdateUserListenedCourseByUserCodeAndCourseId(string(ulStr), code, courseId)
+	} else {
+		ul = append(ul, a.ListenedFile)
 
-		err = model.UpdateUserListenedCourseByUserCodeAndCourseId( string(ulStr), code, courseId )
-	}else {
-		ul[0] = a.ListenedFile
 		ulStr, _ := json.Marshal(ul)
 
 		ulc := &model.UserListenedCourse{
-			Code: code,
-			CourseId:  courseId,
+			Code:          code,
+			CourseId:      courseId,
 			ListenedFiles: string(ulStr),
 		}
 
 		tx := model.GetDB().Begin()
 
-		err = model.InsertUserListenedCourse(tx,  ulc )
+		err = model.InsertUserListenedCourse(tx, ulc)
 
 		if err != nil {
-			 tx.Rollback()
-			 c.JSON(500, nil)
+			tx.Rollback()
+			c.JSON(500, nil)
 		}
 
 		tx.Commit()
 	}
-
-
 
 	c.JSON(200, nil)
 	return
 }
 
 func GetConfig(c *gin.Context) {
-
 
 	cc, err := model.FindConfig()
 
@@ -169,52 +178,66 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 	a := new(types.CourseFileReqeustOkhttp)
 	c.Bind(a)
 
-	//
-	//a.Id = "1"
-	//id, _ := strconv.Atoi(a.Id)
-	//
-	//a := new(types.CourseFileReqeustOkhttp)
-	//c.Bind(a)
-	reauestId := c.Request.PostForm["course_id"]
-	if reauestId == nil {
+	courseId := c.Request.PostForm["course_id"]
+	userCode := c.Request.PostForm["user_code"]
+	if courseId == nil {
 		c.JSON(501, "c.Request.PostForm[\"id\"] 为空")
 	}
 
-	id1, _ := strconv.Atoi(reauestId[0])
-	//id = "1"
-	cc, err := model.FindCourseFileByCourseId(id1)
+	courseIdInt, _ := strconv.Atoi(courseId[0])
 
+	ulc, err := model.FindUserListenedCourseByUserCodeAndCourseId(userCode[0], courseIdInt)
 	if err != nil {
 		c.JSON(501, err)
+		return
 	}
 
-	logger.Info.Println(cc)
+	userListenedFiles := make([]*types.ListenedFile, 0)
 
-	//type Song struct {
-	//	Songname string `json:"songname"`
-	//	Artistname string `json:"artistname"`
-	//	Songid	string 	`json:"songid"`
-	//}
-	//
-	//a1 := make([]Song, 1, 1)
-	//a1[0] = Song{
-	//	Songid: "1",
-	//	Songname: "name11111111",
-	//	Artistname: "art",
-	//
-	//}
+	err = json.Unmarshal([]byte(ulc[0].ListenedFiles), &userListenedFiles)
+	if err != nil {
+		c.JSON(501, err)
+		return
+	}
+
+	courseFiles, err := model.FindCourseFileByCourseId(courseIdInt)
+	if err != nil {
+		c.JSON(501, err)
+		return
+	}
+
+	courseFileMap := make(map[int]*model.CourseFile, len(courseFiles))
+	for _, v := range courseFiles {
+		if _, isExist := courseFileMap[v.Id]; !isExist {
+			courseFileMap[v.Id] = v
+		}
+	}
+
+	for _, v := range userListenedFiles {
+		if _, isExist :=   courseFileMap[v.CourseFileId]; isExist {
+			courseFileMap[v.CourseFileId].ListenedPercent = v.ListenedPercent
+		}
+
+	}
+
+	cc := make([]*model.CourseFile, 0)
+	for _, v :=  range courseFileMap{
+		cc = append(cc, v)
+	}
+
+	logger.Info.Println(courseFiles)
 
 	type Resp struct {
 		CourseFileList []*model.CourseFile `json:"courseFileList"`
 	}
 
-	ret1 := &Resp{
+	ret := &Resp{
 		CourseFileList: cc,
 	}
 
-	c.JSON(200, ret1)
-}
+	c.JSON(200, ret)
 
+}
 func FindCourseFileById(c *gin.Context) {
 	a := new(types.CourseFileReqeust)
 	c.Bind(a)
@@ -405,9 +428,9 @@ func MultiUpload(context *gin.Context) {
 			})
 		}
 		courseFile := &model.CourseFile{
-			CourseId:    courseId,
+			CourseId: courseId,
 			//Title:       title,
-			Number:      number,
+			Number: number,
 			//Mp3Url:      setting.TomlConfig.Test.Server.FileDownload,
 			Mp3FileName: file.Filename,
 		}
