@@ -469,10 +469,7 @@ func MultiUpload(context *gin.Context) {
 			Duration:    durationInt,
 			Mp3FileName: file.Filename,
 		}
-
 		cfs = append(cfs, courseFile)
-
-
 	}
 
 	db := model.GetDB()
