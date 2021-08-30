@@ -8,4 +8,5 @@ require (
 	github.com/jinzhu/configor v1.2.1
 	github.com/jinzhu/gorm v1.9.16
 	github.com/shopspring/decimal v1.2.0
+	github.com/tosone/minimp3 v1.0.1
 )

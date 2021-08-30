@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/tosone/minimp3"
 	"net/http"
 	"regexp"
 	"sort"
@@ -23,6 +24,17 @@ func Login(c *gin.Context) {
 	c.JSON(200, a)
 
 }
+
+func GetMP3PlayDuration(mp3Data []byte) (seconds int, err error) {
+	dec, _, err := minimp3.DecodeFull(mp3Data)
+	if err != nil {
+		return 0, err
+	}
+	// 音乐时长 = (文件大小(byte) - 128(ID3信息)) * 8(to bit) / (码率(kbps b:bit) * 1000)(kilo bit to bit)
+	seconds = (len(mp3Data) - 128) * 8 / (dec.Kbps * 1000)
+	return seconds, nil
+}
+
 func FileDownload(c *gin.Context) {
 	//r := new(types.DownloadReqeust)
 	//c.Bind(r)
@@ -97,7 +109,6 @@ func UpdateUserListenedFiles(c *gin.Context) {
 
 	userListenedFiles := make([]*types.ListenedFile, 0)
 	if len(ret) > 0 {
-
 
 		//cMap := make(map[int]*model.UserListenedCourseFile, len(ret))
 		//for _, v := range ret {
@@ -229,20 +240,20 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 	}
 
 	for _, v := range userListenedFiles {
-		if _, isExist :=   courseFileMap[v.CourseFileId]; isExist {
+		if _, isExist := courseFileMap[v.CourseFileId]; isExist {
 			courseFileMap[v.CourseFileId].ListenedPercent = v.ListenedPercent
 		}
 	}
 
 	cc := make([]*model.CourseFile, 0)
-	for _, v :=  range courseFileMap{
+	for _, v := range courseFileMap {
 		cc = append(cc, v)
 	}
 
 	sort.Slice(cc, func(i, j int) bool {
-		if cc[i].Number < cc[j].Number{
+		if cc[i].Number < cc[j].Number {
 			return true
-		}else{
+		} else {
 			return false
 		}
 	})
@@ -432,8 +443,11 @@ func MultiUpload(context *gin.Context) {
 	courseIdStr := context.Request.PostForm["courseId"][0]
 	courseId, _ := strconv.Atoi(courseIdStr)
 
-	tx := model.GetDB()
-	tx.Begin()
+	durationStr := context.Request.PostForm["duration"][0]
+	durationInt, _ := strconv.Atoi(durationStr)
+
+
+	cfs := make([]*model.CourseFile, 0)
 	for _, filea := range files {
 		file := filea[0]
 		regExp := regexp.MustCompile("[0-9]+")
@@ -450,21 +464,31 @@ func MultiUpload(context *gin.Context) {
 			})
 		}
 		courseFile := &model.CourseFile{
-			CourseId: courseId,
-			//Title:       title,
-			Number: number,
-			//Mp3Url:      setting.TomlConfig.Test.Server.FileDownload,
+			CourseId:    courseId,
+			Number:      number,
+			Duration:    durationInt,
 			Mp3FileName: file.Filename,
 		}
 
-		err = model.InsertCourseFile(tx, courseFile)
+		cfs = append(cfs, courseFile)
+
+
+	}
+
+	db := model.GetDB()
+	tx := db.Begin()
+	for _, v := range cfs {
+		err = model.InsertCourseFile(tx, v)
 		if err != nil {
+			logger.Error.Println( "InsertCourseFile err=", err)
+			tx.Rollback()
 			context.JSON(http.StatusInternalServerError, gin.H{
 				"msg": fmt.Sprintf("ERROR: InsertCourseFileinsert failed. %s", err),
 			})
-			tx.Rollback()
+			return
 		}
 	}
+
 	tx.Commit()
 
 	for _, filea := range files {
@@ -483,4 +507,5 @@ func MultiUpload(context *gin.Context) {
 		"msg":      "upload file succ.",
 		"filepath": setting.TomlConfig.Test.FilStore.FileStorePath,
 	})
+	return
 }
