@@ -14,6 +14,7 @@ import (
 	"thxy/model"
 	"thxy/setting"
 	"thxy/types"
+	"thxy/utils"
 )
 
 func Login(c *gin.Context) {
@@ -463,10 +464,11 @@ func MultiUpload(context *gin.Context) {
 				"msg": fmt.Sprintf("ERROR: Atoi failed. %s", err),
 			})
 		}
+
 		courseFile := &model.CourseFile{
 			CourseId:    courseId,
 			Number:      number,
-			Duration:    durationInt,
+			Duration:    utils.GetTimeStrFromSecond(durationInt),
 			Mp3FileName: file.Filename,
 		}
 		cfs = append(cfs, courseFile)

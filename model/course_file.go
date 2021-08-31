@@ -7,11 +7,11 @@ type CourseFile struct {
 	CourseId        int    `json:"course_id"`
 	Number          int    `json:"number"` // 第几节课
 	ImgSrc          string `json:"img_src"`
-	Mp3FileName     string `json:"mp3_file_name"`
+	Mp3FileName     string `json:"mp3_file_name" gorm:"size:128"`
 	Introduce       string `json:"introduce"`
 	Provider        string `json:"provider"`
 	GroupId         int    `json:"group_id"`
-	Duration        int    `json:"duration"`
+	Duration        string `json:"duration" gorm:"size:16"`
 	WordFilePath    string `json:"word_file_path"`
 	ListenedPercent int    `json:"listened_percent" gorm:"-"`
 }
