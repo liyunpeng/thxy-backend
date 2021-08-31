@@ -108,9 +108,9 @@ func UpdateUserListenedFiles(c *gin.Context) {
 		return
 	}
 
+	lfcfid := request.ListenedFile.CourseFileId
 	userListenedFiles := make([]*types.ListenedFile, 0)
 	if len(ret) > 0 {
-
 		//cMap := make(map[int]*model.UserListenedCourseFile, len(ret))
 		//for _, v := range ret {
 		//	if _, isExist := cMap[v.Id]; !isExist{
@@ -122,7 +122,6 @@ func UpdateUserListenedFiles(c *gin.Context) {
 		json.Unmarshal([]byte(ret[0].ListenedFiles), &userListenedFiles)
 		found := false
 		for k, v := range userListenedFiles {
-
 			//if  _, isExxist := cMap[v.CourseFileId]; isExxist {
 			//	cMap[v.CourseFileId]
 			//
@@ -140,25 +139,27 @@ func UpdateUserListenedFiles(c *gin.Context) {
 		}
 
 		ulStr, _ := json.Marshal(userListenedFiles)
-		err = model.UpdateUserListenedCourseByUserCodeAndCourseId(string(ulStr), code, courseId)
+		err = model.UpdateUserListenedCourseByUserCodeAndCourseId(string(ulStr), code, courseId, lfcfid)
 	} else {
 		userListenedFiles = append(userListenedFiles, request.ListenedFile)
 
-		ulStr, _ := json.Marshal(userListenedFiles)
+		ulfStr, _ := json.Marshal(userListenedFiles)
 
-		ulc := &model.UserListenedCourseFile{
-			Code:          code,
-			CourseId:      courseId,
-			ListenedFiles: string(ulStr),
+		ulcf := &model.UserListenedCourseFile{
+			Code:                     code,
+			CourseId:                 courseId,
+			ListenedFiles:            string(ulfStr),
+			LastListenedCourseFileId: lfcfid,
 		}
 
 		tx := model.GetDB().Begin()
 
-		err = model.InsertUserListenedCourse(tx, ulc)
+		err = model.InsertUserListenedCourse(tx, ulcf)
 
 		if err != nil {
 			tx.Rollback()
 			c.JSON(500, nil)
+			return
 		}
 
 		tx.Commit()
@@ -221,6 +222,7 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 
 	userListenedFiles := make([]*types.ListenedFile, 0)
 
+	LastListenedCourseFileId := ulc[0].LastListenedCourseFileId
 	err = json.Unmarshal([]byte(ulc[0].ListenedFiles), &userListenedFiles)
 	if err != nil {
 		c.JSON(501, err)
@@ -262,15 +264,15 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 	logger.Info.Println(courseFiles)
 
 	type Resp struct {
-		CourseFileList []*model.CourseFile `json:"courseFileList"`
+		CourseFileList           []*model.CourseFile `json:"courseFileList"`
+		LastListenedCourseFileId int                 `json:"last_listened_course_file_id"`
 	}
-
 	ret := &Resp{
-		CourseFileList: cc,
+		CourseFileList:           cc,
+		LastListenedCourseFileId: LastListenedCourseFileId,
 	}
 
 	c.JSON(200, ret)
-
 }
 func FindCourseFileById(c *gin.Context) {
 	a := new(types.CourseFileReqeust)
@@ -447,7 +449,6 @@ func MultiUpload(context *gin.Context) {
 	durationStr := context.Request.PostForm["duration"][0]
 	durationInt, _ := strconv.Atoi(durationStr)
 
-
 	cfs := make([]*model.CourseFile, 0)
 	for _, filea := range files {
 		file := filea[0]
@@ -479,7 +480,7 @@ func MultiUpload(context *gin.Context) {
 	for _, v := range cfs {
 		err = model.InsertCourseFile(tx, v)
 		if err != nil {
-			logger.Error.Println( "InsertCourseFile err=", err)
+			logger.Error.Println("InsertCourseFile err=", err)
 			tx.Rollback()
 			context.JSON(http.StatusInternalServerError, gin.H{
 				"msg": fmt.Sprintf("ERROR: InsertCourseFileinsert failed. %s", err),
