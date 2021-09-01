@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"thxy/api"
+	"thxy/api/user"
 	"thxy/logger"
 	"thxy/middleware/cors"
 	"thxy/setting"
@@ -59,6 +60,11 @@ func InitRouter() *gin.Engine {
 			adminGroup.POST("/getConfig", api.GetConfig)
 			adminGroup.POST("/updateUserListenedFiles", api.UpdateUserListenedFiles)
 			adminGroup.POST("/findCourseFileByCourseIdOk", api.FindCourseFileByCourseIdOk)
+
+
+			adminGroup.POST("/wxBind", user.WXBind)
+			adminGroup.POST("/wxLogin", user.WXLogin)
+			adminGroup.POST("/wxToken", user.WXToken)
 		}
 	}
 

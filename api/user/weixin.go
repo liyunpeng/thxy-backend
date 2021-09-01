@@ -27,8 +27,6 @@ import (
 	//"gitlab.forceup.in/forcepool/userbackend/utils"
 )
 
-
-
 //检测邮箱/手机  与 验证码是否对应，注意：验证之后未删除
 func CheckVcode(key string, vcode string, c *gin.Context) (bool, error) {
 	//如果线上配置文件中不小心写成了off，用户只是收不到验证码，但不至于任何验证码都能随意登录
@@ -52,7 +50,6 @@ func CheckVcode(key string, vcode string, c *gin.Context) (bool, error) {
 	//return false, errors.New(mes.ByCtx(c, mes.CodeNotExist))
 	return session.CheckVerCode(key, vcode, c)
 }
-
 
 // 微信用户绑定
 func WXBind(c *gin.Context) {
@@ -172,11 +169,10 @@ func WXLogin(c *gin.Context) {
 		api.JSONError(c, err.Error(), nil)
 		return
 	}
-	// 通过 openid 查询 wx_user 是否存在 是否和 forcepool 用户绑定
+	// 通过 openid 查询 wx_user 是否存在 是否和 用户绑定
 	wxUser, err := model.GetWXUserByOpenid(wxOpenid.Openid)
 	if err != nil {
-		//logger.Warning.Println(err)
-		logger.Warning.Println(err)
+		logger.Warning.Println("GetWXUserByOpenid err=", err)
 	}
 	if wxUser == nil || wxUser.Id == 0 {
 		// 创建 wx_user entry
@@ -210,7 +206,7 @@ func WXLogin(c *gin.Context) {
 		return
 	}
 
-	// 如果已绑定 返回 forcepool 用户 session
+	// 如果已绑定 返回 用户 session
 	user, err := model.GetUserbyCode(wxUser.UserCode)
 	if err != nil {
 		api.JSONError(c, "登录失败", err)
@@ -225,8 +221,7 @@ func WXLogin(c *gin.Context) {
 	if err != nil {
 		logger.Info.Println("更新登录时间失败:%v", err)
 	}
-	//logger.Info.Println("[%s][%s]登陆成功", user.Phone, user.Email)
-	//
+
 	loginedUser, err := AddUserSessionBySid(user, utils.GenSid())
 	if err != nil {
 		api.JSONError(c, err.Error(), err)
@@ -241,20 +236,15 @@ func WXLogin(c *gin.Context) {
 
 func AddUserSessionBySid(us *model.User, sid string) (u *model.Loginuser, err error) {
 	loginUser := &model.Loginuser{
-		//Epotch:          userRewards.Epotch,
 		SessionId: sid,
 		UserId:    us.Id,
 		UserCode:  us.Code,
+		LastTime:  utils.CurrentTimestamp(),
+		LogTime:   us.LogTime.String(),
 		//Headurl:         headurl,
-		//Phone:           u.Phone,
-		LastTime: utils.CurrentTimestamp(),
-
-		//LastdayIncome:     lastdayIncome,
-		LogTime: us.LogTime.String(),
 	}
 
 	return loginUser, nil
-
 }
 
 func WXToken(c *gin.Context) {
@@ -267,7 +257,6 @@ func WXToken(c *gin.Context) {
 	}
 	res.AccessToken = token
 	api.JSON(c, "操作成功", res)
-
 }
 
 func getOpenid(jscode string) (types.WxOpenid, error) {
@@ -282,7 +271,14 @@ func getOpenid(jscode string) (types.WxOpenid, error) {
 	const grant_type = "authorization_code"
 
 	request := gorequest.New()
-	resp, body, errs := request.Get(fmt.Sprintf("%v%v?grant_type=%v&appid=%v&secret=%v&js_code=%v", wx_gateway, wx_method, grant_type, wx_appid, wx_screct, jscode)).End()
+
+	requestUrl := fmt.Sprintf("%v%v?grant_type=%v&appid=%v&secret=%v&js_code=%v",
+		wx_gateway, wx_method, grant_type,
+		wx_appid, wx_screct, jscode)
+
+	logger.Info.Println(" 微信登录 requestUrl =",  requestUrl)
+
+	resp, body, errs := request.Get(requestUrl).End()
 	if len(errs) > 0 {
 		logger.Warning.Println(errs)
 		return res, fmt.Errorf("%v", errs)
@@ -315,13 +311,6 @@ func getWXToken() (string, error) {
 		logger.Warning.Println(token, e)
 	}
 
-	/*
-	   这样是一点打扰了大家，我觉得也分情况考虑， 一是不是在禅修时间，一是也感觉需要一点帮助，
-
-	   也是对内心是否宽容的考验，
-
-
-	*/
 	var wx_appid = config.WxAppid
 	var wx_screct = config.WxSecret
 	var wx_gateway = config.WxGateway
@@ -329,7 +318,13 @@ func getWXToken() (string, error) {
 	const grant_type = "client_credential"
 
 	request := gorequest.New()
-	resp, body, errs := request.Get(fmt.Sprintf("%v%v?grant_type=%v&appid=%v&secret=%v", wx_gateway, wx_method, grant_type, wx_appid, wx_screct)).End()
+
+	requestUrl := fmt.Sprintf("%v%v?grant_type=%v&appid=%v&secret=%v",
+		wx_gateway, wx_method, grant_type,
+		wx_appid, wx_screct)
+	logger.Info.Println("获取微信token的url= ", requestUrl)
+
+	resp, body, errs := request.Get(requestUrl).End()
 	if len(errs) > 0 {
 		logger.Warning.Println(errs)
 		return "", fmt.Errorf("%v", errs)
