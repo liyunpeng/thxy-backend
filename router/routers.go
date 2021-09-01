@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"thxy/api"
 	"thxy/logger"
@@ -20,8 +19,7 @@ func InitRouter() *gin.Engine {
 	//}
 	r := gin.New()
 	r.Use(gin.Logger())
-	//r.Use(gin.Recovery())
-	//cors.
+	r.Use(gin.Recovery())
 	r.Use(cors.AddCorsHeaders())
 	//r.Use(auth.ImgCheck())
 	//{
@@ -38,11 +36,9 @@ func InitRouter() *gin.Engine {
 			//msg := mes.ByCtx(c, mes.SearchSuccess)
 			//data := settings.AppConfig.App.Version
 			//data := settings.Version
-			fmt.Println("11111111")
 			c.JSON(200, "v1")
 		})
 
-		//baseGroup.POST("/fileItem", api.PaymentOrders)
 		adminGroup := baseGroup.Group("/api")
 		//adminGroup.Use(session.CheckAdminSession())
 		//adminGroup.Use(admin.AdminAccessRightFilter())
@@ -63,9 +59,6 @@ func InitRouter() *gin.Engine {
 			adminGroup.POST("/getConfig", api.GetConfig)
 			adminGroup.POST("/updateUserListenedFiles", api.UpdateUserListenedFiles)
 			adminGroup.POST("/findCourseFileByCourseIdOk", api.FindCourseFileByCourseIdOk)
-
-			//adminGroup.POST("/fileItem", api.PaymentOrders)
-
 		}
 	}
 

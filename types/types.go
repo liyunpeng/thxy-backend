@@ -1,7 +1,19 @@
 package types
 
+import "time"
+
+const (
+	ResErrorCode    = 5
+	ResSuccessCode  = 3
+	ResExpireCode   = 6
+	ResMaintainCode = 7
+)
+
 type AppConfig struct {
 	//App TomlConfig
+	WxAppid              string
+	WxSecret             string
+	WxGateway            string
 	Test TomlEnv
 }
 type TomlServer struct {
@@ -24,6 +36,12 @@ type TomlSession struct {
 }
 
 type TomlRedis struct {
+	Type        string
+	User        string
+	Password    string
+	Host        string
+	Name        string
+	RonglaiName string
 }
 
 type TomlFileStore struct {
@@ -37,3 +55,26 @@ type TomlEnv struct {
 	Session  TomlSession
 	Redis    TomlRedis
 }
+
+type KeyPassParams struct {
+	Key   string `json:"key"`
+	Pwd   string `json:"pwd"`
+	Vcode string `json:"vcode"`
+}
+
+type RegisterParams struct {
+	KeyPassParams
+	ConfirmPwd string `json:"confirm_pwd"`
+}
+
+type NormalTime struct {
+	time.Time
+}
+
+func NewNormalTime(t time.Time) NormalTime {
+	nt := NormalTime{}
+	nt.Time = t
+	return nt
+}
+
+
