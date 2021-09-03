@@ -4,6 +4,10 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"strings"
+	"thxy/api"
+	"thxy/api/admin"
+	"thxy/logger"
+
 	"thxy/redisclient"
 	"thxy/setting"
 	"thxy/utils"
@@ -32,3 +36,25 @@ func CheckVerCode(account string, vcode string, c *gin.Context) (bool, error) {
 	}
 	return false, errors.New(" CheckVerCode error")
 }
+
+func CheckAdminSession() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sid := c.GetHeader(setting.HTTPSidHeader)
+		logger.Info.Printf("check admin session get sid: %v", sid)
+		if sid == "" {
+			sid = c.PostForm("sid")
+		}
+		if sid == "" {
+			sid = c.Query("sid")
+		}
+		as, ok := admin.Sessions.QueryloginS(sid)
+		if !ok {
+			c.Abort()
+			api.JSONExpire(c, "登录过期", nil)
+		} else {
+			c.Set(setting.AdminSessKey, as)
+			c.Next()
+		}
+	}
+}
+

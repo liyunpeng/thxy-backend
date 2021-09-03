@@ -9,12 +9,19 @@ const (
 	ResMaintainCode = 7
 )
 
+type TomlSession struct {
+	Type string
+	Path string
+	Life int
+}
+
 type AppConfig struct {
 	//App TomlConfig
 	WxAppid              string
 	WxSecret             string
 	WxGateway            string
 	Test TomlEnv
+	Session  TomlSession
 }
 type TomlServer struct {
 	Host         string
@@ -32,8 +39,6 @@ type TomlDatabase struct {
 	RonglaiName string
 }
 
-type TomlSession struct {
-}
 
 type TomlRedis struct {
 	Type        string

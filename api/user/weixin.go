@@ -3,6 +3,7 @@ package user
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/parnurzeal/gorequest"
 	"strings"
 	"thxy/api"
@@ -14,40 +15,10 @@ import (
 	"thxy/types"
 	"thxy/utils"
 	"time"
-
-	"github.com/gin-gonic/gin"
-	//"github.com/parnurzeal/gorequest"
-	//"gitlab.forceup.in/forcepool/userbackend/api"
-	//"gitlab.forceup.in/forcepool/userbackend/api/types"
-	//"gitlab.forceup.in/forcepool/userbackend/log"
-	//"gitlab.forceup.in/forcepool/userbackend/mes"
-	//"gitlab.forceup.in/forcepool/userbackend/models"
-	//"gitlab.forceup.in/forcepool/userbackend/redisclient"
-	//"gitlab.forceup.in/forcepool/userbackend/settings"
-	//"gitlab.forceup.in/forcepool/userbackend/utils"
 )
 
 //检测邮箱/手机  与 验证码是否对应，注意：验证之后未删除
 func CheckVcode(key string, vcode string, c *gin.Context) (bool, error) {
-	//如果线上配置文件中不小心写成了off，用户只是收不到验证码，但不至于任何验证码都能随意登录
-	//因此这里还是不要加"off"的判断比较安全
-	//conf := settings.AppConfig
-	//if conf.App.Runmode != settings.RunmodeProd && conf.App.Vcode == "off" {
-	//	return true, nil
-	//}
-	////curTime := utils.CurrentTimestamp()
-	//if val, ok := VerCodes[key]; ok {
-	//	if val.code == strings.ToUpper(vcode) {
-	//		if val.effectivetime < curTime {
-	//			return false, errors.New(mes.ByCtx(c, mes.CodeExpire))
-	//		}
-	//		return true, nil
-	//
-	//	}
-	//	return false, errors.New(mes.ByCtx(c, mes.CodeError))
-	//
-	//}
-	//return false, errors.New(mes.ByCtx(c, mes.CodeNotExist))
 	return session.CheckVerCode(key, vcode, c)
 }
 
@@ -260,15 +231,14 @@ func WXToken(c *gin.Context) {
 }
 
 func getOpenid(jscode string) (types.WxOpenid, error) {
-
 	config := setting.TomlConfig
 	var res types.WxOpenid
 
+	const wx_method = "/sns/jscode2session"
+	const grant_type = "authorization_code"
 	var wx_appid = config.WxAppid
 	var wx_screct = config.WxSecret
 	var wx_gateway = config.WxGateway
-	const wx_method = "/sns/jscode2session"
-	const grant_type = "authorization_code"
 
 	request := gorequest.New()
 
@@ -276,7 +246,7 @@ func getOpenid(jscode string) (types.WxOpenid, error) {
 		wx_gateway, wx_method, grant_type,
 		wx_appid, wx_screct, jscode)
 
-	logger.Info.Println(" 微信登录 requestUrl =",  requestUrl)
+	logger.Info.Println(" 微信登录 requestUrl =", requestUrl)
 
 	resp, body, errs := request.Get(requestUrl).End()
 	if len(errs) > 0 {
@@ -286,7 +256,7 @@ func getOpenid(jscode string) (types.WxOpenid, error) {
 	if resp.StatusCode != 200 {
 		return res, fmt.Errorf("%v", body)
 	}
-	logger.Info.Println(body)
+	logger.Info.Println("getOpenid=", body)
 
 	err := json.Unmarshal([]byte(body), &res)
 	if err != nil {

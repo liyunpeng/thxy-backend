@@ -26,6 +26,11 @@ const WXTOKEN_KEY = "wxtoken"
 
 var TomlConfig *types.AppConfig
 
+var (
+	HTTPSidHeader       = "X-SID"
+	AdminSessKey        = "adminsid"
+	UserSessKey         = "usersid"
+)
 func InitConfig(fileName string) {
 	TomlConfig = new(types.AppConfig)
 	err := configor.Load(TomlConfig, fileName)

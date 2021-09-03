@@ -9,8 +9,9 @@ require (
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/jinzhu/configor v1.2.1
 	github.com/jinzhu/gorm v1.9.16
+	github.com/mattn/go-sqlite3 v1.14.0
 	github.com/parnurzeal/gorequest v0.2.16
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/shopspring/decimal v1.2.0
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/tosone/minimp3 v1.0.1

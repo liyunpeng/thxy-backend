@@ -20,7 +20,7 @@ cronSpec = "*/1 * * * *"
 #webhook  = "https://oapi.dingtalk.com/robot/send?access_token=bbea86eb05d17e62f08bd1ab958285e3c5740c076635ad74a9d669bf542b6a08"
 # signSecret = "SECea65e013982df402a8e6cde4ab003f1227a0e618f485ad51e27cc5728787521e"
 
-# 测试群2
+#  盯盯机器人报告 测试群2
 webhook = "https://oapi.dingtalk.com/robot/send?access_token=beef14074d9d5f94a435370aeec797ebb195ddd2c2c9b6a7282f08aa9849731b"
 signSecret = "SECa9aacec17a1616c139326187feb6a74026b98da741761fc78658cb30df4f28f2"
 
