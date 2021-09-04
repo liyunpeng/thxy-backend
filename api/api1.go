@@ -216,21 +216,23 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 
 	ulc, err := model.FindUserListenedCourseByUserCodeAndCourseId(userCode[0], courseIdInt)
 	if err != nil {
+		logger.Warning.Println("  FindUserListenedCourseByUserCodeAndCourseId err=", err)
 		c.JSON(501, err)
 		return
 	}
+	LastListenedCourseFileId := ulc[0].LastListenedCourseFileId
 
 	userListenedFiles := make([]*types.ListenedFile, 0)
-
-	LastListenedCourseFileId := ulc[0].LastListenedCourseFileId
 	err = json.Unmarshal([]byte(ulc[0].ListenedFiles), &userListenedFiles)
 	if err != nil {
+		logger.Warning.Println(" ListenedFiles  Unmarshal err =  ", err)
 		c.JSON(501, err)
 		return
 	}
 
 	courseFiles, err := model.FindCourseFileByCourseId(courseIdInt)
 	if err != nil {
+		logger.Warning.Println("FindCourseFileByCourseId err =  ", err)
 		c.JSON(501, err)
 		return
 	}
@@ -245,16 +247,17 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 	for _, v := range userListenedFiles {
 		if _, isExist := courseFileMap[v.CourseFileId]; isExist {
 			courseFileMap[v.CourseFileId].ListenedPercent = v.ListenedPercent
+			courseFileMap[v.CourseFileId].ListenedPosition = v.Position
 		}
 	}
 
-	cc := make([]*model.CourseFile, 0)
+	courseFileList := make([]*model.CourseFile, 0)
 	for _, v := range courseFileMap {
-		cc = append(cc, v)
+		courseFileList = append(courseFileList, v)
 	}
 
-	sort.Slice(cc, func(i, j int) bool {
-		if cc[i].Number < cc[j].Number {
+	sort.Slice(courseFileList, func(i, j int) bool {
+		if courseFileList[i].Number < courseFileList[j].Number {
 			return true
 		} else {
 			return false
@@ -268,7 +271,7 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 		LastListenedCourseFileId int                 `json:"last_listened_course_file_id"`
 	}
 	ret := &Resp{
-		CourseFileList:           cc,
+		CourseFileList:           courseFileList,
 		LastListenedCourseFileId: LastListenedCourseFileId,
 	}
 

@@ -28,7 +28,7 @@ func InsertUserListenedCourse(tx *gorm.DB, u *UserListenedCourseFile) (err error
 }
 
 func FindUserListenedCourseByUserCodeAndCourseId(code string, courseId int) (a []*UserListenedCourseFile, err error) {
-	err = db.Model(&UserListenedCourseFile{}).Select("*").Where(" code = ? and course_id = ? ", code, courseId).Find(&a).Error
+	err = db.Debug().Model(&UserListenedCourseFile{}).Select("*").Where(" code = ? and course_id = ? ", code, courseId).Find(&a).Error
 	return
 }
 

@@ -20,6 +20,7 @@ type DownloadReqeust struct {
 type ListenedFile struct {
 	CourseFileId    int `json:"cfi"` // 为了节约数据库存储空间
 	ListenedPercent int `json:"pc"`
+	Position        int `json:"pos"`
 }
 
 type UserListenedFilesRequest struct {

@@ -14,6 +14,7 @@ type CourseFile struct {
 	Duration        string `json:"duration" gorm:"size:16"`
 	WordFilePath    string `json:"word_file_path"`
 	ListenedPercent int    `json:"listened_percent" gorm:"-"`
+	ListenedPosition int    `json:"listened_position" gorm:"-"`
 }
 
 func (CourseFile) TableName() string {
