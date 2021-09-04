@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"thxy/api/admin"
 	"thxy/logger"
 	"thxy/model"
 	"thxy/router"
@@ -15,6 +16,8 @@ func main() {
 	setting.InitConfig("conf/app.toml")
 	r := router.InitRouter()
 	model.Setup()
+
+	admin.SessionInit()
 
 	//addr := fmt.Sprintf(":%d", setting.TomlConfig.Test.Server.Host)
 	//maxHeaderBytes := 1 << 20

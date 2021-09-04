@@ -37,7 +37,8 @@ type UserSess struct {
 }
 
 func SessionDB() (*sql.DB, error) {
-	return sql.Open(conf.Session.Type, conf.Session.Path)
+	//return sql.Open(conf.Session.Type, conf.Session.Path)
+	return sql.Open("sqlite3", "conf/session.db")
 }
 
 func PersisAdminsess(adminid int, sid string) (err error) {
@@ -143,7 +144,8 @@ func SessAdminList() (asList []AdminSess, err error) {
 	}
 	curTime := utils.CurrentTimestamp()
 
-	stmt := fmt.Sprintf("select * from adminsess where log_time > %d", curTime-int64(conf.Session.Life))
+	//stmt := fmt.Sprintf("select * from adminsess where log_time > %d", curTime-int64(conf.Session.Life))
+	stmt := fmt.Sprintf("select * from adminsess where log_time > %d", curTime-36000)
 	//fmt.Println(stmt)
 	rows, err := db.Query(stmt)
 	if err != nil {

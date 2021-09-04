@@ -3,6 +3,11 @@ wxAppid = "wx7e306a5034aca495"
 wxSecret = "d29e63b667d0ed2538381e18810e4041"
 wxGateway = "https://api.weixin.qq.com"
 
+[session]
+type = "sqlite3"
+path = "conf/session.db"
+life = 36000
+
 [test]
 [test.filStore]
 fileStorePath = "./data/"

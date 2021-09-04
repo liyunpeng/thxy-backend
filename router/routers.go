@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"thxy/api"
+	"thxy/api/admin"
 	"thxy/api/user"
 	"thxy/logger"
 	"thxy/middleware/cors"
@@ -44,6 +45,7 @@ func InitRouter() *gin.Engine {
 		//adminGroup.Use(session.CheckAdminSession())
 		//adminGroup.Use(admin.AdminAccessRightFilter())
 		{
+			adminGroup.POST("/adminLogin", admin.Login)
 			adminGroup.POST("/login", api.Login)
 			adminGroup.POST("/fileUpload", api.FileUpload)
 
@@ -60,7 +62,6 @@ func InitRouter() *gin.Engine {
 			adminGroup.POST("/getConfig", api.GetConfig)
 			adminGroup.POST("/updateUserListenedFiles", api.UpdateUserListenedFiles)
 			adminGroup.POST("/findCourseFileByCourseIdOk", api.FindCourseFileByCourseIdOk)
-
 
 			adminGroup.POST("/wxBind", user.WXBind)
 			adminGroup.POST("/wxLogin", user.WXLogin)

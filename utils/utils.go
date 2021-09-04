@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/md5"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"io"
 	"math/rand"
 	"strconv"
+	"thxy/setting"
 	"time"
 	crand "crypto/rand"
 )
@@ -190,6 +192,15 @@ func GenSid() string {
 	//return fmt.Sprintf("%x", string(bson.NewObjectId()))
 	s, _ := GenerateRandomString(32)
 	return fmt.Sprintf("%s", s)
+}
+
+func ComparePassword(phrase, password string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(password), []byte(phrase)) == nil
+}
+
+func Password(str string) string {
+	str = setting.PasswordPrefix + str
+	return fmt.Sprintf("%x", md5.Sum([]byte(str)))
 }
 
 func GenerateRandomBytes(n int) ([]byte, error) {
