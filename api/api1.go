@@ -122,13 +122,9 @@ func UpdateUserListenedFiles(c *gin.Context) {
 		json.Unmarshal([]byte(ret[0].ListenedFiles), &userListenedFiles)
 		found := false
 		for k, v := range userListenedFiles {
-			//if  _, isExxist := cMap[v.CourseFileId]; isExxist {
-			//	cMap[v.CourseFileId]
-			//
-			//}
-
 			if v.CourseFileId == request.ListenedFile.CourseFileId {
 				userListenedFiles[k].ListenedPercent = request.ListenedFile.ListenedPercent
+				userListenedFiles[k].Position = request.ListenedFile.Position
 				found = true
 				break
 			}
