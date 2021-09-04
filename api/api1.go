@@ -214,25 +214,40 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 
 	courseIdInt, _ := strconv.Atoi(courseId[0])
 
+	courseFiles, err := model.FindCourseFileByCourseId(courseIdInt)
+	if err != nil {
+		logger.Warning.Println("FindCourseFileByCourseId err =  ", err)
+		c.JSON(501, err)
+		return
+	}
+
 	ulc, err := model.FindUserListenedCourseByUserCodeAndCourseId(userCode[0], courseIdInt)
 	if err != nil {
 		logger.Warning.Println("  FindUserListenedCourseByUserCodeAndCourseId err=", err)
 		c.JSON(501, err)
 		return
 	}
+
+	type Resp struct {
+		CourseFileList           []*model.CourseFile `json:"courseFileList"`
+		LastListenedCourseFileId int                 `json:"last_listened_course_file_id"`
+	}
+
+	if len(ulc) <= 0 {
+		ret := &Resp{
+			CourseFileList:           courseFiles,
+			LastListenedCourseFileId: -2,
+		}
+		c.JSON(200, ret)
+		return
+	}
+
 	LastListenedCourseFileId := ulc[0].LastListenedCourseFileId
 
 	userListenedFiles := make([]*types.ListenedFile, 0)
 	err = json.Unmarshal([]byte(ulc[0].ListenedFiles), &userListenedFiles)
 	if err != nil {
 		logger.Warning.Println(" ListenedFiles  Unmarshal err =  ", err)
-		c.JSON(501, err)
-		return
-	}
-
-	courseFiles, err := model.FindCourseFileByCourseId(courseIdInt)
-	if err != nil {
-		logger.Warning.Println("FindCourseFileByCourseId err =  ", err)
 		c.JSON(501, err)
 		return
 	}
@@ -266,10 +281,6 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 
 	logger.Info.Println(courseFiles)
 
-	type Resp struct {
-		CourseFileList           []*model.CourseFile `json:"courseFileList"`
-		LastListenedCourseFileId int                 `json:"last_listened_course_file_id"`
-	}
 	ret := &Resp{
 		CourseFileList:           courseFileList,
 		LastListenedCourseFileId: LastListenedCourseFileId,
