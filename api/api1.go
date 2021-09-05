@@ -331,63 +331,57 @@ func GetCourseTypesOk(c *gin.Context) {
 }
 
 func GetAllCourseIds(c *gin.Context) {
-	a := new(types.CourseFileReqeust)
-	c.Bind(a)
+	request := new(types.CourseFileReqeust)
+	c.Bind(request)
 
-	type AA struct {
+	type Children struct {
 		Value int    `json:"value"`
 		Label string `json:"label"`
 	}
 
-	type CC struct {
-		Value    int    `json:"value"`
-		Label    string `json:"label"`
-		Children []AA   `json:"children"`
+	type OptionItem struct {
+		Value    int        `json:"value"`
+		Label    string     `json:"label"`
+		Children []Children `json:"children"`
 	}
 
 	courseGroup, err := model.GetAllCourseGroup()
-
-	add := make([]CC, 0, len(courseGroup))
-
-	aMap := make(map[int]string, len(add))
-	for _, v2 := range courseGroup {
-		aMap[v2.TypeId] = v2.Name
+	optionItems := make([]OptionItem, 0, len(courseGroup))
+	optionItemsMap := make(map[int]string, len(optionItems))
+	for _, courseGroupItem := range courseGroup {
+		optionItemsMap[courseGroupItem.TypeId] = courseGroupItem.Name
 	}
 
-	cc, err := model.GetAllCourseIds()
+	allCourseIds, err := model.GetAllCourseIds()
 
 	for _, v := range courseGroup {
-		cccc := CC{
+		optionItem := OptionItem{
 			Value: v.TypeId,
 			Label: v.Name,
 		}
-		add = append(add, cccc)
+		optionItems = append(optionItems, optionItem)
 	}
 
-	for _, s2 := range cc {
-		aacc := AA{
-			Value: s2.Id,
-			Label: s2.Title,
+	for _, courseItem := range allCourseIds {
+		children := Children{
+			Value: courseItem.Id,
+			Label: courseItem.Title,
 		}
-		//aacc.Value = s2.Id
-		//aacc.Label = s2.Title
 
-		for k, v3 := range add {
-			if v3.Value == s2.TypeId {
-				add[k].Children = append(add[k].Children, aacc)
+		for index, optionItem := range optionItems {
+			if optionItem.Value == courseItem.TypeId {
+				optionItems[index].Children = append(optionItems[index].Children, children)
 				break
 			}
 		}
 	}
 
-	//for k, v := range cc {
-	//	v.TypeId
-	//}
 	if err != nil {
+		logger.Warning.Println(" admin 选择框获取课程类型错误 ")
 		c.JSON(501, err)
 	}
 
-	c.JSON(200, add)
+	c.JSON(200, optionItems)
 }
 
 func FindCourseByTypeId(c *gin.Context) {
