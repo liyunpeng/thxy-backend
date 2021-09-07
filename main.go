@@ -17,6 +17,7 @@ func main() {
 	r := router.InitRouter()
 	model.Setup()
 
+	model.SessionPersisInit()
 	admin.SessionInit()
 
 	//addr := fmt.Sprintf(":%d", setting.TomlConfig.Test.Server.Host)

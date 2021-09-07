@@ -327,13 +327,14 @@ func AddCourseType(c *gin.Context) {
 	r := new(types.CourseTypeRequest)
 	c.Bind(r)
 
-	ct := &model.CourseType{
+	courseType := &model.CourseType{
 		Name: r.Name,
 	}
-	err := model.AddCourseType(ct)
+	err := model.AddCourseType(courseType)
 	if err != nil {
-		logger.Error.Println(" 更新课程类型失败 , err=", err)
-		c.JSON(501, err)
+		logger.Error.Println(" 添加课程类型失败 , err=", err)
+		JSONError(c, "AddCourseType err=" + err.Error() ,  err)
+		return
 	}
 
 	c.JSON(200, nil)
