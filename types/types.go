@@ -86,3 +86,14 @@ func NewNormalTime(t time.Time) NormalTime {
 	nt.Time = t
 	return nt
 }
+
+type Children struct {
+	Value int    `json:"value"`
+	Label string `json:"label"`
+}
+
+type OptionItem struct {
+	Value    int        `json:"value"`
+	Label    string     `json:"label"`
+	Children []Children `json:"children"`
+}

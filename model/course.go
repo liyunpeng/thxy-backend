@@ -38,7 +38,6 @@ type CourseTypeItem struct {
 }
 
 func GetAllCourseIds() (a []*CourseTitleItem, err error) {
-
 	err = db.Debug().Raw("select id, type_id, title from course").Find(&a).Error
 	return
 }
@@ -47,5 +46,16 @@ func GetAllCourseGroup() (a []*CourseTypeItem, err error) {
 	s := "select  c.type_id, t.name from course c inner join course_type t on c.type_id = t.id group by c.type_id"
 	//s := "select c.id,  c.type_id, t.name from course c inner join course_type t on c.type_id = t.id group by t.id "
 	err = db.Debug().Raw(s).Find(&a).Error
+	return
+}
+
+func InsertCourse( c *Course) (err error){
+	err = db.Debug().Create(c).Error
+	return
+}
+
+
+func UpdateCourse( c *Course) (err error){
+	err = db.Debug().Update(c).Error
 	return
 }

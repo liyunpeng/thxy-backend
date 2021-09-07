@@ -45,24 +45,41 @@ func InitRouter() *gin.Engine {
 		//adminGroup.Use(session.CheckAdminSession())
 		//adminGroup.Use(admin.AdminAccessRightFilter())
 		{
+			adminGroup.POST("/getConfig", api.GetConfig)
+
+			// login
 			adminGroup.POST("/adminLogin", admin.Login)
 			adminGroup.POST("/login", api.Login)
-			adminGroup.POST("/fileUpload", api.FileUpload)
 
-			adminGroup.POST("/getAllCourseIds", api.GetAllCourseIds)
-			adminGroup.GET("/fileDownload", api.FileDownload)
+			// upload
+			adminGroup.POST("/fileUpload", api.FileUpload)
 			adminGroup.POST("/multiUpload", api.MultiUpload)
+
+			// download
+			adminGroup.GET("/fileDownload", api.FileDownload)
+
+			// courseType 
 			adminGroup.POST("/getCourseTypes", api.GetCourseTypes)
+			adminGroup.POST("/updateCourseType", api.UpdateCourseType)
+			adminGroup.POST("/addCourseType", api.AddCourseType)
 			adminGroup.POST("/getCourseTypesOk", api.GetCourseTypesOk)
 			adminGroup.POST("/findCourseByTypeId", api.FindCourseByTypeId)
-			adminGroup.POST("/findCourseFileById", api.FindCourseFileById)
+
+			// course
 			adminGroup.POST("/findCourseByTypeIdOk", api.FindCourseByTypeIdOkhttp)
+			adminGroup.POST("/adminGetAllCourseIds", api.AdminGetAllCourseIds)
+			adminGroup.POST("/adminGetAllCourseType", api.AdminGetAllCourseType)
+			adminGroup.POST("/addCourse", api.AddCourse)
+			adminGroup.POST("/updateCourse", api.UpdateCourse)
+
+			// courseFile
+			adminGroup.POST("/findCourseFileById", api.FindCourseFileById)
 			adminGroup.POST("/findCourseFileByCourseId", api.FindCourseFileByCourseId)
-			adminGroup.POST("/getLatest", api.GetLatest)
-			adminGroup.POST("/getConfig", api.GetConfig)
+			adminGroup.POST("/getLatest", api.GetLatestCourseFile)
 			adminGroup.POST("/updateUserListenedFiles", api.UpdateUserListenedFiles)
 			adminGroup.POST("/findCourseFileByCourseIdOk", api.FindCourseFileByCourseIdOk)
 
+			// weixin
 			adminGroup.POST("/wxBind", user.WXBind)
 			adminGroup.POST("/wxLogin", user.WXLogin)
 			adminGroup.POST("/wxToken", user.WXToken)

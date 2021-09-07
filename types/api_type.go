@@ -4,15 +4,23 @@ type Response1 struct {
 	AccessToken string `json:"access_token"`
 }
 
-type CourseFileReqeust struct {
-	Id int `json:"id"`
+type CourseTypeRequest struct {
+	Id   int    `json:"id"` // id 为course type id
+	Name string `json:"name"`
 }
 
-type CourseFileReqeustOkhttp struct {
+type CourseRequest struct {
+	Id        int    `json:"id"`
+	Title     string `json:"title"`
+	StorePath string `json:"store_path"`
+	ImgSrc    string `json:"img_src"`
+}
+
+type CourseFileRequestOkhttp struct {
 	Id string `json:"id"`
 }
 
-type DownloadReqeust struct {
+type DownloadRequest struct {
 	Id       int    `json:"id"`
 	FileName string `json:"file_name"`
 }
@@ -43,4 +51,8 @@ type CommonList struct {
 	ServiceNotShowCount  int         `json:"service_not_show_count"`
 	ServiceShowCount     int         `json:"service_show_count"`
 	List                 interface{} `json:"list"`
+}
+
+type MultiUploadRequest struct {
+	CourseId int `json:"courseId"`
 }

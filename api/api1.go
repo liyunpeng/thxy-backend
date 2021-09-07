@@ -37,7 +37,7 @@ func GetMP3PlayDuration(mp3Data []byte) (seconds int, err error) {
 }
 
 func FileDownload(c *gin.Context) {
-	//r := new(types.DownloadReqeust)
+	//r := new(types.DownloadRequest)
 	//c.Bind(r)
 
 	fileName := c.Query("fileName")
@@ -76,7 +76,7 @@ func FileUpload(context *gin.Context) {
 	})
 }
 
-func GetLatest(c *gin.Context) {
+func GetLatestCourseFile(c *gin.Context) {
 
 	cc, err := model.FindCourseFileListLatest(10)
 
@@ -185,7 +185,7 @@ func GetConfig(c *gin.Context) {
 }
 
 func FindCourseFileByCourseId(c *gin.Context) {
-	a := new(types.CourseFileReqeust)
+	a := new(types.CourseTypeRequest)
 	c.Bind(a)
 
 	cc, err := model.FindCourseFileByCourseId(a.Id)
@@ -199,7 +199,7 @@ func FindCourseFileByCourseId(c *gin.Context) {
 }
 
 func FindCourseFileByCourseIdOk(c *gin.Context) {
-	a := new(types.CourseFileReqeustOkhttp)
+	a := new(types.CourseFileRequestOkhttp)
 	c.Bind(a)
 
 	courseId := c.Request.PostForm["course_id"]
@@ -285,7 +285,7 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 	c.JSON(200, ret)
 }
 func FindCourseFileById(c *gin.Context) {
-	a := new(types.CourseFileReqeust)
+	a := new(types.CourseTypeRequest)
 	c.Bind(a)
 
 	cc, err := model.FindCourseFileById(a.Id)
@@ -298,7 +298,7 @@ func FindCourseFileById(c *gin.Context) {
 }
 
 func GetCourseTypes(c *gin.Context) {
-	a := new(types.CourseFileReqeust)
+	a := new(types.CourseTypeRequest)
 	c.Bind(a)
 
 	cc, err := model.FindAllCourseTypes()
@@ -310,8 +310,37 @@ func GetCourseTypes(c *gin.Context) {
 	c.JSON(200, cc)
 }
 
+func UpdateCourseType(c *gin.Context) {
+	r := new(types.CourseTypeRequest)
+	c.Bind(r)
+
+	err := model.UpdateCourseTypeById(r.Name, r.Id)
+	if err != nil {
+		logger.Error.Println(" 更新课程类型失败 , err=", err)
+		c.JSON(501, err)
+	}
+
+	c.JSON(200, nil)
+}
+
+func AddCourseType(c *gin.Context) {
+	r := new(types.CourseTypeRequest)
+	c.Bind(r)
+
+	ct := &model.CourseType{
+		Name: r.Name,
+	}
+	err := model.AddCourseType(ct)
+	if err != nil {
+		logger.Error.Println(" 更新课程类型失败 , err=", err)
+		c.JSON(501, err)
+	}
+
+	c.JSON(200, nil)
+}
+
 func GetCourseTypesOk(c *gin.Context) {
-	a := new(types.CourseFileReqeust)
+	a := new(types.CourseTypeRequest)
 	c.Bind(a)
 
 	cc, err := model.FindAllCourseTypes()
@@ -330,32 +359,47 @@ func GetCourseTypesOk(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-func GetAllCourseIds(c *gin.Context) {
-	request := new(types.CourseFileReqeust)
+func AdminGetAllCourseType(c *gin.Context) {
+	courseGroup, err := model.FindAllCourseTypes()
+	if err != nil {
+		logger.Warning.Println(" admin 选择框获取课程类型错误, err = ", err)
+		c.JSON(501, err)
+		return
+	}
+
+	optionItems := make([]types.OptionItem, 0, len(courseGroup))
+	for _, v := range courseGroup {
+		optionItem := types.OptionItem{
+			Value: v.Id,
+			Label: v.Name,
+		}
+		optionItems = append(optionItems, optionItem)
+	}
+
+	c.JSON(200, optionItems)
+
+	return
+}
+func AdminGetAllCourseIds(c *gin.Context) {
+	request := new(types.CourseTypeRequest)
 	c.Bind(request)
 
-	type Children struct {
-		Value int    `json:"value"`
-		Label string `json:"label"`
-	}
-
-	type OptionItem struct {
-		Value    int        `json:"value"`
-		Label    string     `json:"label"`
-		Children []Children `json:"children"`
-	}
-
 	courseGroup, err := model.GetAllCourseGroup()
-	optionItems := make([]OptionItem, 0, len(courseGroup))
+	if err != nil {
+		logger.Warning.Println(" admin 选择框获取课程类型错误, err = ", err)
+		c.JSON(501, err)
+		return
+	}
+
+	optionItems := make([]types.OptionItem, 0, len(courseGroup))
 	optionItemsMap := make(map[int]string, len(optionItems))
 	for _, courseGroupItem := range courseGroup {
 		optionItemsMap[courseGroupItem.TypeId] = courseGroupItem.Name
 	}
-
 	allCourseIds, err := model.GetAllCourseIds()
 
 	for _, v := range courseGroup {
-		optionItem := OptionItem{
+		optionItem := types.OptionItem{
 			Value: v.TypeId,
 			Label: v.Name,
 		}
@@ -363,7 +407,7 @@ func GetAllCourseIds(c *gin.Context) {
 	}
 
 	for _, courseItem := range allCourseIds {
-		children := Children{
+		children := types.Children{
 			Value: courseItem.Id,
 			Label: courseItem.Title,
 		}
@@ -375,30 +419,31 @@ func GetAllCourseIds(c *gin.Context) {
 			}
 		}
 	}
-
 	if err != nil {
-		logger.Warning.Println(" admin 选择框获取课程类型错误 ")
+		logger.Warning.Println(" admin 选择框获取课程类型错误, err = ", err)
 		c.JSON(501, err)
+		return
 	}
-
 	c.JSON(200, optionItems)
+	return
 }
 
 func FindCourseByTypeId(c *gin.Context) {
-	a := new(types.CourseFileReqeust)
-	c.Bind(a)
+	request := new(types.CourseTypeRequest)
+	c.Bind(request)
 
-	cc, err := model.FindCourseByTypeId(a.Id)
-
+	courseByTypeId, err := model.FindCourseByTypeId(request.Id)
 	if err != nil {
+		logger.Warning.Println(" admin FindCourseByTypeId err = ", err)
 		c.JSON(501, err)
+		return
 	}
 
-	c.JSON(200, cc)
+	c.JSON(200, courseByTypeId)
 }
 
 func FindCourseByTypeIdOkhttp(c *gin.Context) {
-	a := new(types.CourseFileReqeustOkhttp)
+	a := new(types.CourseFileRequestOkhttp)
 	c.Bind(a)
 
 	reauestId := c.Request.PostForm["id"]
@@ -422,19 +467,49 @@ func FindCourseByTypeIdOkhttp(c *gin.Context) {
 	c.JSON(200, ret)
 }
 
-func MultiUpload(context *gin.Context) {
-	type Request struct {
-		CourseId int `json:"courseId"`
+func AddCourse(c *gin.Context) {
+	r := new(types.CourseRequest)
+	c.Bind(r)
+	cs := &model.Course{
+		Title: r.Title,
 	}
-	r := new(Request)
+	err := model.InsertCourse(cs)
+	if err != nil {
+		JSONError(c, "AddCourse err= "+err.Error(), nil)
+		return
+	}
 
-	context.Bind(r)
+	JSON(c, "ok", nil)
+
+	return
+}
+
+func UpdateCourse(c *gin.Context) {
+	r := new(types.CourseRequest)
+	c.Bind(r)
+	course := &model.Course{
+		Title:     r.Title,
+		StorePath: r.StorePath,
+		ImgSrc:    r.ImgSrc,
+	}
+	err := model.UpdateCourse(course)
+	if err != nil {
+		JSONError(c, "AddCourse err= "+err.Error(), nil)
+		return
+	}
+
+	JSON(c, "ok", nil)
+	return
+}
+
+func MultiUpload(c *gin.Context) {
+	r := new(types.MultiUploadRequest)
+	c.Bind(r)
 
 	logger.Info.Println("r:", r)
-
-	form, err := context.MultipartForm()
+	form, err := c.MultipartForm()
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"msg": fmt.Sprintf("ERROR: parse form failed. %s", err),
 		})
 		return
@@ -447,15 +522,15 @@ func MultiUpload(context *gin.Context) {
 	//}
 
 	files := form.File
-	courseIdStr := context.Request.PostForm["courseId"][0]
+	courseIdStr := c.Request.PostForm["courseId"][0]
 	courseId, _ := strconv.Atoi(courseIdStr)
 
-	durationStr := context.Request.PostForm["duration"][0]
+	durationStr := c.Request.PostForm["duration"][0]
 	durationInt, _ := strconv.Atoi(durationStr)
 
-	cfs := make([]*model.CourseFile, 0)
-	for _, filea := range files {
-		file := filea[0]
+	courseFiles := make([]*model.CourseFile, 0)
+	for _, fileArr := range files {
+		file := fileArr[0]
 		regExp := regexp.MustCompile("[0-9]+")
 
 		titleArr := strings.Split(file.Filename, ".")
@@ -465,7 +540,7 @@ func MultiUpload(context *gin.Context) {
 		number, err := strconv.Atoi(numberStr[0])
 
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusInternalServerError, gin.H{
 				"msg": fmt.Sprintf("ERROR: Atoi failed. %s", err),
 			})
 		}
@@ -476,17 +551,17 @@ func MultiUpload(context *gin.Context) {
 			Duration:    utils.GetTimeStrFromSecond(durationInt),
 			Mp3FileName: file.Filename,
 		}
-		cfs = append(cfs, courseFile)
+		courseFiles = append(courseFiles, courseFile)
 	}
 
 	db := model.GetDB()
 	tx := db.Begin()
-	for _, v := range cfs {
+	for _, v := range courseFiles {
 		err = model.InsertCourseFile(tx, v)
 		if err != nil {
 			logger.Error.Println("InsertCourseFile err=", err)
 			tx.Rollback()
-			context.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusInternalServerError, gin.H{
 				"msg": fmt.Sprintf("ERROR: InsertCourseFileinsert failed. %s", err),
 			})
 			return
@@ -499,16 +574,16 @@ func MultiUpload(context *gin.Context) {
 		file := filea[0]
 		dst := fmt.Sprint(setting.TomlConfig.Test.FilStore.FileStorePath + file.Filename)
 		logger.Debug.Println("dst: ", dst)
-		err = context.SaveUploadedFile(file, dst)
+		err = c.SaveUploadedFile(file, dst)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusInternalServerError, gin.H{
 				"msg": fmt.Sprintf("ERROR: save file failed. %s", err),
 			})
 		}
 	}
 
-	context.JSON(http.StatusOK, gin.H{
-		"msg":      "upload file succ.",
+	c.JSON(http.StatusOK, gin.H{
+		"msg":      "upload file success",
 		"filepath": setting.TomlConfig.Test.FilStore.FileStorePath,
 	})
 	return
