@@ -4,13 +4,13 @@ import "github.com/jinzhu/gorm"
 
 type Course struct {
 	Model
-	Title     string `json:"title"`
-	Introduce string `json:"introduce"`
-	Provider  string `json:"provider"`
-	ImgSrc    string `json:"img_src"`
-	StorePath string `json:"store_path"`
-	TypeId    int    `json:"type_id"`
-	CataLevel int    `json:"cata_level"` // 1：一级目录， 点中之后， 直接进文件， 2：存在二级目录， 点中之后进下一级
+	Title       string `json:"title" `
+	Introduce   string `json:"introduce"`
+	Provider    string `json:"provider"`
+	ImgFileName string `json:"img_file_name"`
+	StorePath   string `json:"store_path"`
+	TypeId      int    `json:"type_id"`
+	CateLevel   int    `json:"cate_level"` // 1：一级目录， 点中之后， 直接进文件， 2：存在二级目录， 点中之后进下一级
 }
 
 func (Course) TableName() string {
@@ -51,28 +51,27 @@ func GetAllCourseGroup() (a []*CourseTypeItem, err error) {
 	return
 }
 
-func InsertCourse( c *Course) (err error){
+func InsertCourse(c *Course) (err error) {
 	err = db.Debug().Create(c).Error
 	return
 }
 
-func InsertCourseT( tx *gorm.DB, c *Course) (err error){
+func InsertCourseT(tx *gorm.DB, c *Course) (err error) {
 	err = tx.Debug().Create(c).Error
 	return
 }
 
-
-func UpdateCourse( c *Course) (err error){
+func UpdateCourse(c *Course) (err error) {
 	err = db.Debug().Table("course ").Update(c).Error
 	return
 }
 
-func DeleteCourse( id int ) (err error){
+func DeleteCourse(id int) (err error) {
 	err = db.Debug().Exec("delete from course where id = ? ", id).Error
 	return
 }
 
-func DeleteCourseType( id int ) (err error){
+func DeleteCourseType(id int) (err error) {
 	err = db.Debug().Exec("delete from course_type where id = ? ", id).Error
 	return
 }

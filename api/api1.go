@@ -41,16 +41,21 @@ func FileDownload(c *gin.Context) {
 	//r := new(types.DownloadRequest)
 	//c.Bind(r)
 
-	fileName := c.Query("fileName")
+	// 组合成文件路径， 如：./data/37/mp3/music.mp3
+	courseId := c.Query("course_id")
+	fileType := c.Query("file_type") // fileType 为img， 或 mp3
+	fileName := c.Query("file_name")
 
 	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName)) //fmt.Sprintf("attachment; filename=%s", filename)对下载的文件重命名
 	c.Writer.Header().Add("Content-Type", "application/octet-stream")
 
 	storePath := setting.TomlConfig.Test.FileStore.FileStorePath
 
-	c.File(storePath + fileName)
+	filePath := storePath + courseId + "/" + fileType + "/" + fileName
 
-	logger.Info.Println(" 下载文件")
+	logger.Info.Println(" 下载文件路径=", filePath)
+	c.File(filePath)
+
 }
 
 // 单文件上传
@@ -318,7 +323,7 @@ func UpdateCourseType(c *gin.Context) {
 	err := model.UpdateCourseTypeById(r.Name, r.Id)
 	if err != nil {
 		logger.Error.Println(" 更新课程类型失败 , err=", err)
-		JSONError(c, "UpdateCourseType err= " + err.Error(), nil)
+		JSONError(c, "UpdateCourseType err= "+err.Error(), nil)
 		return
 	}
 
@@ -493,9 +498,9 @@ func UpdateCourse(c *gin.Context) {
 	r := new(types.CourseRequest)
 	c.Bind(r)
 	course := &model.Course{
-		Title:     r.Title,
-		StorePath: r.StorePath,
-		ImgSrc:    r.ImgSrc,
+		Title:       r.Title,
+		StorePath:   r.StorePath,
+		ImgFileName: r.ImgSrc,
 	}
 	err := model.UpdateCourse(course)
 	if err != nil {
@@ -604,13 +609,21 @@ func MultiUpload(c *gin.Context) {
 
 	for _, filea := range files {
 		file := filea[0]
-		dst := fmt.Sprint(setting.TomlConfig.Test.FileStore.FileStorePath + file.Filename)
+		//dst := fmt.Sprint(setting.TomlConfig.Test.FileStore.FileStorePath + file.Filename)
+
+		storePath := setting.TomlConfig.Test.FileStore.FileStorePath
+		dst := storePath + strconv.Itoa(courseId ) + "/mp3"  + "/" + file.Filename
 		logger.Debug.Println("dst: ", dst)
 		err = c.SaveUploadedFile(file, dst)
 		if err != nil {
+
+			logger.Error.Println(" 上传mp3文件出错： err= ",err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"msg": fmt.Sprintf("ERROR: save file failed. %s", err),
 			})
+
+
+			return
 		}
 	}
 
@@ -620,7 +633,6 @@ func MultiUpload(c *gin.Context) {
 	})
 	return
 }
-
 
 func CoursePictureUpload(c *gin.Context) {
 	r := new(types.MultiUploadRequest)
@@ -666,10 +678,9 @@ func CoursePictureUpload(c *gin.Context) {
 		}
 
 		course := &model.Course{
-			TypeId: durationInt,
-			Title: courseTitle,
-			ImgSrc: file.Filename,
-
+			TypeId:      durationInt,
+			Title:       courseTitle,
+			ImgFileName: file.Filename,
 		}
 		courses = append(courses, course)
 	}
@@ -690,15 +701,15 @@ func CoursePictureUpload(c *gin.Context) {
 			return
 		}
 
-		imgDir =  utils.GetDir(v.Id, "img")
-		mp3Dir =  utils.GetDir(v.Id, "mp3")
+		imgDir = utils.GetDir(v.Id, "img")
+		mp3Dir = utils.GetDir(v.Id, "mp3")
 
-		logger.Info.Println( v.Title, " 创建img目录：", imgDir)
-		logger.Info.Println( v.Title, " 创建mp3目录：", mp3Dir)
+		logger.Info.Println(v.Title, " 创建img目录：", imgDir)
+		logger.Info.Println(v.Title, " 创建mp3目录：", mp3Dir)
 
-		err =  os.MkdirAll(imgDir, os.ModePerm)
+		err = os.MkdirAll(imgDir, os.ModePerm)
 		if err != nil {
-			 tx.Rollback()
+			tx.Rollback()
 		}
 		err = os.MkdirAll(mp3Dir, os.ModePerm)
 	}
@@ -711,7 +722,7 @@ func CoursePictureUpload(c *gin.Context) {
 		logger.Debug.Println("dst: ", dst)
 		err = c.SaveUploadedFile(file, dst)
 		if err != nil {
-			JSON(c, " SaveUploadedFile err= " + err.Error(), nil)
+			JSON(c, " SaveUploadedFile err= "+err.Error(), nil)
 			logger.Error.Println(" 创建失败： SaveUploadedFile err=  ", err)
 			return
 		}

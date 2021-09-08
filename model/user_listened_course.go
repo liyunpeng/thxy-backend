@@ -4,10 +4,6 @@ import "github.com/jinzhu/gorm"
 
 type UserListenedCourseFile struct {
 	Model
-	//Openid    string           `json:"openid" gorm:"unique_index:idx_openid;size:255;comment:''"`
-	//Account string `json:"account" gorm:"size:40;comment:'用户账号'"`
-	//Phone   string `json:"phone" gorm:"size:11;comment:'手机号'"`
-
 	Code                     string `json:"code" gorm:"index:idx_code; size:40;comment:'用户编码'"`
 	CourseId                 int    `json:"course_id" gorm:"index:idx_course_id; size:40;comment:'123'"`
 	LastListenedCourseFileId int    `json:"last_listened_course_file_id" gorm:"size:40;comment:'123'"`

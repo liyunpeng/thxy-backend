@@ -4,16 +4,16 @@ import "github.com/jinzhu/gorm"
 
 type CourseFile struct {
 	Model
-	CourseId        int    `json:"course_id"`
-	Number          int    `json:"number"` // 第几节课
-	ImgSrc          string `json:"img_src"`
-	Mp3FileName     string `json:"mp3_file_name" gorm:"size:128"`
-	Introduce       string `json:"introduce"`
-	Provider        string `json:"provider"`
-	GroupId         int    `json:"group_id"`
-	Duration        string `json:"duration" gorm:"size:16"`
-	WordFilePath    string `json:"word_file_path"`
-	ListenedPercent int    `json:"listened_percent" gorm:"-"`
+	CourseId         int    `json:"course_id"` // 所在课程id
+	Number           int    `json:"number"`    // 第几节课
+	ImgFileName      string `json:"img_file_name"`
+	Mp3FileName      string `json:"mp3_file_name" gorm:"size:128"`
+	Introduce        string `json:"introduce"`
+	Provider         string `json:"provider"`
+	GroupId          int    `json:"group_id"`
+	Duration         string `json:"duration" gorm:"size:16"`
+	WordFilePath     string `json:"word_file_path"`
+	ListenedPercent  int    `json:"listened_percent" gorm:"-"`
 	ListenedPosition int    `json:"listened_position" gorm:"-"`
 }
 
