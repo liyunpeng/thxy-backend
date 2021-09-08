@@ -526,12 +526,10 @@ func DeleteCourseType(c *gin.Context) {
 	c.Bind(r)
 
 	err := model.DeleteCourseType(r.Id)
-
 	if err != nil {
 		JSONError(c, "DeleteCourseType err= "+err.Error(), nil)
 		return
 	}
-
 	JSON(c, "ok", nil)
 	return
 }
@@ -561,7 +559,6 @@ func MultiUpload(c *gin.Context) {
 
 	durationStr := c.Request.PostForm["duration"][0]
 	durationInt, _ := strconv.Atoi(durationStr)
-
 	courseFiles := make([]*model.CourseFile, 0)
 	for _, fileArr := range files {
 		file := fileArr[0]
@@ -592,6 +589,94 @@ func MultiUpload(c *gin.Context) {
 	tx := db.Begin()
 	for _, v := range courseFiles {
 		err = model.InsertCourseFile(tx, v)
+		if err != nil {
+			logger.Error.Println("InsertCourseFile err=", err)
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"msg": fmt.Sprintf("ERROR: InsertCourseFileinsert failed. %s", err),
+			})
+			return
+		}
+	}
+
+	tx.Commit()
+
+	for _, filea := range files {
+		file := filea[0]
+		dst := fmt.Sprint(setting.TomlConfig.Test.FilStore.FileStorePath + file.Filename)
+		logger.Debug.Println("dst: ", dst)
+		err = c.SaveUploadedFile(file, dst)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"msg": fmt.Sprintf("ERROR: save file failed. %s", err),
+			})
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"msg":      "upload file success",
+		"filepath": setting.TomlConfig.Test.FilStore.FileStorePath,
+	})
+	return
+}
+
+
+func CoursePictureUpload(c *gin.Context) {
+	r := new(types.MultiUploadRequest)
+	c.Bind(r)
+
+	logger.Info.Println("r:", r)
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": fmt.Sprintf("ERROR: parse form failed. %s", err),
+		})
+		return
+	}
+	// 多个文件上传，要用同一个key
+	//files := form.File["files"]
+	//for k, v := range form {
+	//	fmt.Println("key is: ", k)
+	//	fmt.Println("val is: ", v)
+	//}
+
+	files := form.File
+	courseTitle := c.Request.PostForm["course_title"][0]
+	//courseId, _ := strconv.Atoi(courseIdStr)
+
+	durationStr := c.Request.PostForm["type_id"][0]
+	durationInt, _ := strconv.Atoi(durationStr)
+	courses := make([]*model.Course, 0)
+	for _, fileArr := range files {
+		file := fileArr[0]
+
+		//regExp := regexp.MustCompile("[0-9]+")
+		//
+		//titleArr := strings.Split(file.Filename, ".")
+		//title := titleArr[0]
+
+		//numberStr := regExp.FindAllString(title, -1)
+		//number, err := strconv.Atoi(numberStr[0])
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"msg": fmt.Sprintf("ERROR: Atoi failed. %s", err),
+			})
+		}
+
+		course := &model.Course{
+			TypeId: durationInt,
+			Title: courseTitle,
+			ImgSrc: file.Filename,
+
+		}
+		courses = append(courses, course)
+	}
+
+	db := model.GetDB()
+	tx := db.Begin()
+	for _, v := range courses {
+		err = model.InsertCourse(v)
 		if err != nil {
 			logger.Error.Println("InsertCourseFile err=", err)
 			tx.Rollback()
