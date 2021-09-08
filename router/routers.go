@@ -60,10 +60,11 @@ func InitRouter() *gin.Engine {
 
 			// courseType 
 			adminGroup.POST("/getCourseTypes", api.GetCourseTypes)
-			adminGroup.POST("/updateCourseType", api.UpdateCourseType)
-			adminGroup.POST("/addCourseType", api.AddCourseType)
 			adminGroup.POST("/getCourseTypesOk", api.GetCourseTypesOk)
 			adminGroup.POST("/findCourseByTypeId", api.FindCourseByTypeId)
+			adminGroup.POST("/updateCourseType", api.UpdateCourseType)
+			adminGroup.POST("/addCourseType", api.AddCourseType)
+			adminGroup.POST("/deleteCourseType", api.DeleteCourseType)
 
 			// course
 			adminGroup.POST("/findCourseByTypeIdOk", api.FindCourseByTypeIdOkhttp)
@@ -71,6 +72,7 @@ func InitRouter() *gin.Engine {
 			adminGroup.POST("/adminGetAllCourseType", api.AdminGetAllCourseType)
 			adminGroup.POST("/addCourse", api.AddCourse)
 			adminGroup.POST("/updateCourse", api.UpdateCourse)
+			adminGroup.POST("/deleteCourse", api.DeleteCourse)
 
 			// courseFile
 			adminGroup.POST("/findCourseFileById", api.FindCourseFileById)

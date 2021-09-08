@@ -11,6 +11,7 @@ type CourseTypeRequest struct {
 
 type CourseRequest struct {
 	Id        int    `json:"id"`
+	TypeId    int    `json:"type_id"`
 	Title     string `json:"title"`
 	StorePath string `json:"store_path"`
 	ImgSrc    string `json:"img_src"`

@@ -317,10 +317,12 @@ func UpdateCourseType(c *gin.Context) {
 	err := model.UpdateCourseTypeById(r.Name, r.Id)
 	if err != nil {
 		logger.Error.Println(" 更新课程类型失败 , err=", err)
-		c.JSON(501, err)
+		JSONError(c, "UpdateCourseType err= " + err.Error(), nil)
+		return
 	}
 
-	c.JSON(200, nil)
+	JSON(c, "ok", nil)
+	return
 }
 
 func AddCourseType(c *gin.Context) {
@@ -333,11 +335,11 @@ func AddCourseType(c *gin.Context) {
 	err := model.AddCourseType(courseType)
 	if err != nil {
 		logger.Error.Println(" 添加课程类型失败 , err=", err)
-		JSONError(c, "AddCourseType err=" + err.Error() ,  err)
+		JSONError(c, "AddCourseType err="+err.Error(), err)
 		return
 	}
 
-	c.JSON(200, nil)
+	JSON(c, "ok", nil)
 }
 
 func GetCourseTypesOk(c *gin.Context) {
@@ -472,7 +474,8 @@ func AddCourse(c *gin.Context) {
 	r := new(types.CourseRequest)
 	c.Bind(r)
 	cs := &model.Course{
-		Title: r.Title,
+		Title:  r.Title,
+		TypeId: r.TypeId,
 	}
 	err := model.InsertCourse(cs)
 	if err != nil {
@@ -496,6 +499,36 @@ func UpdateCourse(c *gin.Context) {
 	err := model.UpdateCourse(course)
 	if err != nil {
 		JSONError(c, "AddCourse err= "+err.Error(), nil)
+		return
+	}
+
+	JSON(c, "ok", nil)
+	return
+}
+
+func DeleteCourse(c *gin.Context) {
+	r := new(types.CourseRequest)
+	c.Bind(r)
+
+	err := model.DeleteCourse(r.Id)
+
+	if err != nil {
+		JSONError(c, "DeleteCourse err= "+err.Error(), nil)
+		return
+	}
+
+	JSON(c, "ok", nil)
+	return
+}
+
+func DeleteCourseType(c *gin.Context) {
+	r := new(types.CourseRequest)
+	c.Bind(r)
+
+	err := model.DeleteCourseType(r.Id)
+
+	if err != nil {
+		JSONError(c, "DeleteCourseType err= "+err.Error(), nil)
 		return
 	}
 

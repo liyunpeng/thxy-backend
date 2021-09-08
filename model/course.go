@@ -56,6 +56,16 @@ func InsertCourse( c *Course) (err error){
 
 
 func UpdateCourse( c *Course) (err error){
-	err = db.Debug().Update(c).Error
+	err = db.Debug().Table("course ").Update(c).Error
+	return
+}
+
+func DeleteCourse( id int ) (err error){
+	err = db.Debug().Exec("delete from course where id = ? ", id).Error
+	return
+}
+
+func DeleteCourseType( id int ) (err error){
+	err = db.Debug().Exec("delete from course_type where id = ? ", id).Error
 	return
 }
