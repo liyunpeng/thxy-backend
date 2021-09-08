@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tosone/minimp3"
 	"net/http"
+	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -45,7 +46,7 @@ func FileDownload(c *gin.Context) {
 	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName)) //fmt.Sprintf("attachment; filename=%s", filename)对下载的文件重命名
 	c.Writer.Header().Add("Content-Type", "application/octet-stream")
 
-	storePath := setting.TomlConfig.Test.FilStore.FileStorePath
+	storePath := setting.TomlConfig.Test.FileStore.FileStorePath
 
 	c.File(storePath + fileName)
 
@@ -603,7 +604,7 @@ func MultiUpload(c *gin.Context) {
 
 	for _, filea := range files {
 		file := filea[0]
-		dst := fmt.Sprint(setting.TomlConfig.Test.FilStore.FileStorePath + file.Filename)
+		dst := fmt.Sprint(setting.TomlConfig.Test.FileStore.FileStorePath + file.Filename)
 		logger.Debug.Println("dst: ", dst)
 		err = c.SaveUploadedFile(file, dst)
 		if err != nil {
@@ -615,7 +616,7 @@ func MultiUpload(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"msg":      "upload file success",
-		"filepath": setting.TomlConfig.Test.FilStore.FileStorePath,
+		"filepath": setting.TomlConfig.Test.FileStore.FileStorePath,
 	})
 	return
 }
@@ -675,8 +676,11 @@ func CoursePictureUpload(c *gin.Context) {
 
 	db := model.GetDB()
 	tx := db.Begin()
+
+	var imgDir string
+	var mp3Dir string
 	for _, v := range courses {
-		err = model.InsertCourse(v)
+		err = model.InsertCourseT(tx, v)
 		if err != nil {
 			logger.Error.Println("InsertCourseFile err=", err)
 			tx.Rollback()
@@ -685,25 +689,34 @@ func CoursePictureUpload(c *gin.Context) {
 			})
 			return
 		}
+
+		imgDir =  utils.GetDir(v.Id, "img")
+		mp3Dir =  utils.GetDir(v.Id, "mp3")
+
+		logger.Info.Println( v.Title, " 创建img目录：", imgDir)
+		logger.Info.Println( v.Title, " 创建mp3目录：", mp3Dir)
+
+		err =  os.MkdirAll(imgDir, os.ModePerm)
+		if err != nil {
+			 tx.Rollback()
+		}
+		err = os.MkdirAll(mp3Dir, os.ModePerm)
 	}
 
 	tx.Commit()
 
 	for _, filea := range files {
 		file := filea[0]
-		dst := fmt.Sprint(setting.TomlConfig.Test.FilStore.FileStorePath + file.Filename)
+		dst := imgDir + file.Filename
 		logger.Debug.Println("dst: ", dst)
 		err = c.SaveUploadedFile(file, dst)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": fmt.Sprintf("ERROR: save file failed. %s", err),
-			})
+			JSON(c, " SaveUploadedFile err= " + err.Error(), nil)
+			logger.Error.Println(" 创建失败： SaveUploadedFile err=  ", err)
+			return
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"msg":      "upload file success",
-		"filepath": setting.TomlConfig.Test.FilStore.FileStorePath,
-	})
+	JSON(c, "ok", nil)
 	return
 }

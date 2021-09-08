@@ -9,7 +9,7 @@ path = "conf/session.db"
 life = 36000
 
 [test]
-[test.filStore]
+[test.fileStore]
 fileStorePath = "./data/"
 
 [test.server]

@@ -59,7 +59,7 @@ type TomlFileStore struct {
 }
 
 type TomlEnv struct {
-	FilStore TomlFileStore
+	FileStore TomlFileStore
 	Server   TomlServer
 	Database TomlDatabase
 	Session  TomlSession

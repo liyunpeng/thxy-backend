@@ -216,3 +216,8 @@ func GenerateRandomString(s int) (string, error) {
 	b, _ := GenerateRandomBytes(s)
 	return hex.EncodeToString(b), nil
 }
+
+func GetDir( id int,  imgOrMp3 string ) string {
+	dir := setting.TomlConfig.Test.FileStore.FileStorePath  +  strconv.Itoa(id ) + "/" + imgOrMp3 + "/"
+	return  dir
+}

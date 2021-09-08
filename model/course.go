@@ -1,5 +1,7 @@
 package model
 
+import "github.com/jinzhu/gorm"
+
 type Course struct {
 	Model
 	Title     string `json:"title"`
@@ -51,6 +53,11 @@ func GetAllCourseGroup() (a []*CourseTypeItem, err error) {
 
 func InsertCourse( c *Course) (err error){
 	err = db.Debug().Create(c).Error
+	return
+}
+
+func InsertCourseT( tx *gorm.DB, c *Course) (err error){
+	err = tx.Debug().Create(c).Error
 	return
 }
 
