@@ -27,6 +27,25 @@ func Login(c *gin.Context) {
 
 }
 
+func UpdatePwd(c *gin.Context) {
+	type A struct {
+		Pwd string `json:"pwd"`
+	}
+
+	a := new(A)
+	c.Bind(a)
+
+	err := model.UpdatePwd(a.Pwd)
+
+	if err != nil {
+		JSONError(c, err.Error(), nil)
+		return
+	}
+
+	JSON(c, "ok", nil)
+
+}
+
 func GetMP3PlayDuration(mp3Data []byte) (seconds int, err error) {
 	dec, _, err := minimp3.DecodeFull(mp3Data)
 	if err != nil {
@@ -114,7 +133,7 @@ func UpdateUserListenedFiles(c *gin.Context) {
 		return
 	}
 
-	lfcfid := request.ListenedFile.CourseFileId
+	lastListenedFileId := request.LastListenedFileId
 	userListenedFiles := make([]*types.ListenedFile, 0)
 	if len(ret) > 0 {
 		//cMap := make(map[int]*model.UserListenedCourseFile, len(ret))
@@ -141,7 +160,7 @@ func UpdateUserListenedFiles(c *gin.Context) {
 		}
 
 		ulStr, _ := json.Marshal(userListenedFiles)
-		err = model.UpdateUserListenedCourseByUserCodeAndCourseId(string(ulStr), code, courseId, lfcfid)
+		err = model.UpdateUserListenedCourseByUserCodeAndCourseId(string(ulStr), code, courseId, lastListenedFileId)
 	} else {
 		userListenedFiles = append(userListenedFiles, request.ListenedFile)
 
@@ -151,7 +170,7 @@ func UpdateUserListenedFiles(c *gin.Context) {
 			Code:                     code,
 			CourseId:                 courseId,
 			ListenedFiles:            string(ulfStr),
-			LastListenedCourseFileId: lfcfid,
+			LastListenedCourseFileId: lastListenedFileId,
 		}
 
 		tx := model.GetDB().Begin()
@@ -498,11 +517,12 @@ func UpdateCourse(c *gin.Context) {
 	r := new(types.CourseRequest)
 	c.Bind(r)
 	course := &model.Course{
+		//Id: r.Id,
 		Title:       r.Title,
 		StorePath:   r.StorePath,
 		ImgFileName: r.ImgSrc,
 	}
-	err := model.UpdateCourse(course)
+	err := model.UpdateCourse(course.Title, r.Id)
 	if err != nil {
 		JSONError(c, "AddCourse err= "+err.Error(), nil)
 		return

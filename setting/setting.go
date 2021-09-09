@@ -24,7 +24,7 @@ const AUTHIMG_PREFIX = "at"
 
 const WXTOKEN_KEY = "wxtoken"
 var PasswordExpireHours = 24 * 30
-var PasswordPrefix = "thxy_"
+var PasswordPrefix = ""
 var TomlConfig *types.AppConfig
 
 var (

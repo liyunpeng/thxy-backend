@@ -5,9 +5,9 @@ import "github.com/jinzhu/gorm"
 type UserListenedCourseFile struct {
 	Model
 	Code                     string `json:"code" gorm:"index:idx_code; size:40;comment:'用户编码'"`
-	CourseId                 int    `json:"course_id" gorm:"index:idx_course_id; size:40;comment:'123'"`
-	LastListenedCourseFileId int    `json:"last_listened_course_file_id" gorm:"size:40;comment:'123'"`
-	ListenedFiles            string `json:"listened_files" gorm:"size:1024;comment:''"`
+	CourseId                 int    `json:"course_id" gorm:"index:idx_course_id; size:40;comment:'课程id'"`
+	LastListenedCourseFileId int    `json:"last_listened_course_file_id" gorm:"size:40;comment:'上次听过的课程文件id'"`
+	ListenedFiles            string `json:"listened_files" gorm:"size:1024;comment:'已听文件的序列化字符串'"`
 }
 
 func (UserListenedCourseFile) TableName() string {
@@ -28,8 +28,8 @@ func FindUserListenedCourseByUserCodeAndCourseId(code string, courseId int) (a [
 	return
 }
 
-func UpdateUserListenedCourseByUserCodeAndCourseId(listenedFiles string, code string, courseId, courseFileId int) (err error) {
+func UpdateUserListenedCourseByUserCodeAndCourseId(listenedFiles string, code string, courseId, lsstListenedFileId int) (err error) {
 	err = db.Debug().Exec(" update user_listened_course set listened_files = ?, last_listened_course_file_id = ?  where code = ? and course_id = ? ",
-		listenedFiles, courseFileId,  code, courseId).Error
+		listenedFiles, lsstListenedFileId,  code, courseId).Error
 	return
 }

@@ -1,5 +1,11 @@
 .idea/
-forcepool-errors.log
 *.mp3
+*.png
 .DS_Store
 data/
+./thxy-errors.log
+./tihuxueyuan.png
+./conf/session.db
+thxy-backend
+thxy-errors.log
+tihuxueyuan.png

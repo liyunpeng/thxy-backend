@@ -73,6 +73,11 @@ func AddAdmin(admin *Admin) (err error) {
 	return
 }
 
+func UpdatePwd(pwd string) (err error) {
+	err = db.Debug().Exec("update admin set pwd = ? ", pwd).Error
+	return
+}
+
 func UpdateAdmin(admin *Admin) (err error) {
 	err = db.Model(admin).Update(admin).Error
 	return

@@ -50,6 +50,7 @@ func InitRouter() *gin.Engine {
 			// login
 			adminGroup.POST("/adminLogin", admin.Login)
 			adminGroup.POST("/login", api.Login)
+			adminGroup.POST("/updatePwd", api.UpdatePwd)
 
 			// upload
 			adminGroup.POST("/fileUpload", api.FileUpload)

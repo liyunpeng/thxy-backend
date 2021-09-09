@@ -33,9 +33,10 @@ type ListenedFile struct {
 }
 
 type UserListenedFilesRequest struct {
-	Code         string        `json:"code"`
-	CourseId     int           `json:"course_id"`
-	ListenedFile *ListenedFile `json:"listened_file"`
+	Code               string        `json:"code"`
+	CourseId           int           `json:"course_id"`
+	ListenedFile       *ListenedFile `json:"listened_file"`
+	LastListenedFileId int           `json:"last_listened_file_id"`
 }
 
 type CommonRes struct {

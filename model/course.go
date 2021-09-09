@@ -61,8 +61,13 @@ func InsertCourseT(tx *gorm.DB, c *Course) (err error) {
 	return
 }
 
-func UpdateCourse(c *Course) (err error) {
+func UpdateCourse1(c *Course) (err error) {
 	err = db.Debug().Table("course ").Update(c).Error
+	return
+}
+
+func UpdateCourse(title string, id int ) (err error) {
+	err = db.Debug().Exec(" update course set title= ? where id = ? ", title, id).Error
 	return
 }
 
