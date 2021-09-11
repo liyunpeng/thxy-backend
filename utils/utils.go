@@ -89,12 +89,16 @@ func GetTimeZeroLastSecond(timeDuration string) string {
 }
 
 func GetTimeStrFromSecond(seconds int) string {
+	hour := strconv.Itoa(seconds/(60*60))
 	minute := strconv.Itoa(seconds / 60)
 	second := strconv.Itoa(seconds % 60)
 
 	if second == "0" || second == "" {
 		return minute + ":00"
 	} else {
+		if hour != "0"  {
+			return hour + ":" +minute + ":" + second
+		}
 		return minute + ":" + second
 	}
 }

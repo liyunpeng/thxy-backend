@@ -69,7 +69,7 @@ func FileDownload(c *gin.Context) {
 	c.Writer.Header().Add("Content-Type", "application/octet-stream")
 
 	storePath := setting.TomlConfig.Test.FileStore.FileStorePath
-
+// 感恩
 	filePath := storePath + courseId + "/" + fileType + "/" + fileName
 
 	logger.Info.Println(" 下载文件路径=", filePath)
@@ -586,8 +586,44 @@ func MultiUpload(c *gin.Context) {
 	durationStr := c.Request.PostForm["duration"][0]
 	durationInt, _ := strconv.Atoi(durationStr)
 	courseFiles := make([]*model.CourseFile, 0)
+
+	logger.Info.Println("时长： ",durationInt )
+
 	for _, fileArr := range files {
 		file := fileArr[0]
+		storePath := setting.TomlConfig.Test.FileStore.FileStorePath
+		dst := storePath + strconv.Itoa(courseId ) + "/mp3"  + "/" + file.Filename
+		logger.Debug.Println("dst: ", dst)
+		err = c.SaveUploadedFile(file, dst)
+		if err != nil {
+			logger.Error.Println(" 上传mp3文件出错： err= ",err)
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": fmt.Sprintf("ERROR: save file failed. %s", err),
+			})
+			return
+		}
+
+		//f, _  := file.Open()
+		//
+		//ss := make([]byte, 1024*1024)
+		////a, _ := f.Read(ss)
+		//f.Read(ss)
+		//offset := 0
+		//var s1 []byte
+		//for {
+		//	len1, _ := f.ReadAt(ss, int64(offset))
+		//	offset = offset + len1
+		//	if len1 == 0 {
+		//		break
+		//	}
+		//	s1 = append(s1, ss...)
+		//	//fmt.Println( string(ss))
+		//}
+		//f.Close()
+		//durationMp3,  _ := GetMP3PlayDuration(s1)
+		//logger.Info.Println("filename=",  file.Filename, ",  duration=", durationMp3)
+
+
+
 		regExp := regexp.MustCompile("[0-9]+")
 
 		titleArr := strings.Split(file.Filename, ".")
@@ -627,25 +663,6 @@ func MultiUpload(c *gin.Context) {
 
 	tx.Commit()
 
-	for _, filea := range files {
-		file := filea[0]
-		//dst := fmt.Sprint(setting.TomlConfig.Test.FileStore.FileStorePath + file.Filename)
-
-		storePath := setting.TomlConfig.Test.FileStore.FileStorePath
-		dst := storePath + strconv.Itoa(courseId ) + "/mp3"  + "/" + file.Filename
-		logger.Debug.Println("dst: ", dst)
-		err = c.SaveUploadedFile(file, dst)
-		if err != nil {
-
-			logger.Error.Println(" 上传mp3文件出错： err= ",err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": fmt.Sprintf("ERROR: save file failed. %s", err),
-			})
-
-
-			return
-		}
-	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"msg":      "upload file success",
