@@ -21,12 +21,6 @@ func init() {
 	autoMigrateModels = append(autoMigrateModels, &Course{})
 }
 
-func FindCourseByTypeId(typeId int) (a []*Course, err error) {
-	//a = new(Course)
-	err = db.Debug().Model(&Course{}).Select("*").Where("type_id = ? ", typeId).Find(&a).Error
-	return
-}
-
 type CourseTitleItem struct {
 	Id     int    `gorm:"json:"id"`
 	TypeId int    `json:"type_id"`
@@ -78,5 +72,17 @@ func DeleteCourse(id int) (err error) {
 
 func DeleteCourseType(id int) (err error) {
 	err = db.Debug().Exec("delete from course_type where id = ? ", id).Error
+	return
+}
+
+func FindCourseByTypeId(typeId int) (a []*Course, err error) {
+	//a = new(Course)
+	err = db.Debug().Model(&Course{}).Select("*").Where("type_id = ? ", typeId).Find(&a).Error
+	return
+}
+
+func FindCourseById(courseId int) (a *Course, err error) {
+	a = new(Course)
+	err = db.Debug().Model(&Course{}).Select("*").Where("id = ? ", courseId).First(a).Error
 	return
 }

@@ -18,7 +18,8 @@ httpPort = 9600
 readTimeout = 60
 writeTimeout = 60
 cronWithSec = false
-fileDownload = "http://47.102.146.8:8082/api/fileDownload"
+#fileDownload = "http://47.102.146.8:8082/api/fileDownload"
+fileDownload = "http://10.0.0.2:8082/api/fileDownload"
 # cronSpec = "*/2 * * * *"
 cronSpec = "*/1 * * * *"
 # 测试群1
@@ -35,14 +36,12 @@ signSecret = "SECa9aacec17a1616c139326187feb6a74026b98da741761fc78658cb30df4f28f
 
 [test.database]
 type = "mysql"
-#user = "root"
-#password = "123456"
-#host = "localhost:3306"
-
+# localhost的用户名为root， root为123456
 user = "root"
-password = "thxy"
-host = "47.102.146.8:3306"
-
+password = "123456"
+host = "localhost:3306"
+# 47.102.146.8 的用户名为root， 密码为thxy
+#user = "root"
+#password = "thxy"
+#host = "47.102.146.8:3306"
 name = "thxy"
-
-

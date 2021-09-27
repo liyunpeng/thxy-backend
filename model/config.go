@@ -6,7 +6,6 @@ type Config struct {
 	Mp3SourceRouter string `json:"mp3_source_router"`
 }
 
-
 func (Config) TableName() string {
 	return "config"
 }

@@ -56,6 +56,27 @@ func GetMP3PlayDuration(mp3Data []byte) (seconds int, err error) {
 	return seconds, nil
 }
 
+func ApkUpload(c *gin.Context) {
+	//r := new(types.DownloadRequest)
+	//c.Bind(r)
+
+	// 组合成文件路径， 如：./data/37/mp3/music.mp3
+	//courseId := c.Query("course_id")
+	//fileType := c.Query("file_type") // fileType 为img， 或 mp3
+	//fileName := c.Query("file_name")
+	fileName := "app-debug.apk"
+
+	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName)) //fmt.Sprintf("attachment; filename=%s", filename)对下载的文件重命名
+	c.Writer.Header().Add("Content-Type", "application/octet-stream")
+
+	storePath := setting.TomlConfig.Test.FileStore.FileStorePath
+	filePath := storePath + fileName
+
+	logger.Info.Println(" 下载文件路径=", filePath)
+	c.File(filePath)
+
+}
+
 func FileDownload(c *gin.Context) {
 	//r := new(types.DownloadRequest)
 	//c.Bind(r)
@@ -69,7 +90,7 @@ func FileDownload(c *gin.Context) {
 	c.Writer.Header().Add("Content-Type", "application/octet-stream")
 
 	storePath := setting.TomlConfig.Test.FileStore.FileStorePath
-// 感恩
+
 	filePath := storePath + courseId + "/" + fileType + "/" + fileName
 
 	logger.Info.Println(" 下载文件路径=", filePath)
@@ -127,24 +148,24 @@ func UpdateUserListenedFiles(c *gin.Context) {
 
 	code := request.Code
 	courseId := request.CourseId
-	ret, err := model.FindUserListenedCourseByUserCodeAndCourseId(code, courseId)
+	listenedCourseByUserCodeAndCourseId, err := model.FindUserListenedCourseByUserCodeAndCourseId(code, courseId)
 	if err != nil {
-		c.JSON(501, err)
+		JSONError(c, "查找已听记录错误 " , err)
 		return
 	}
 
 	lastListenedFileId := request.LastListenedFileId
 	userListenedFiles := make([]*types.ListenedFile, 0)
-	if len(ret) > 0 {
-		//cMap := make(map[int]*model.UserListenedCourseFile, len(ret))
-		//for _, v := range ret {
+	if len(listenedCourseByUserCodeAndCourseId) > 0 {
+		//cMap := make(map[int]*model.UserListenedCourseFile, len(listenedCourseByUserCodeAndCourseId))
+		//for _, v := range listenedCourseByUserCodeAndCourseId {
 		//	if _, isExist := cMap[v.Id]; !isExist{
 		//		cMap[v.Id] = v
 		//	}
 		//
 		//}
 
-		json.Unmarshal([]byte(ret[0].ListenedFiles), &userListenedFiles)
+		json.Unmarshal([]byte(listenedCourseByUserCodeAndCourseId[0].ListenedFiles), &userListenedFiles)
 		found := false
 		for k, v := range userListenedFiles {
 			if v.CourseFileId == request.ListenedFile.CourseFileId {
@@ -159,12 +180,21 @@ func UpdateUserListenedFiles(c *gin.Context) {
 			userListenedFiles = append(userListenedFiles, request.ListenedFile)
 		}
 
-		ulStr, _ := json.Marshal(userListenedFiles)
+		var ulStr []byte
+		ulStr, err = json.Marshal(userListenedFiles)
+		if err != nil {
+			JSONError(c, "Marshal 序列化错误 ", err)
+			return
+		}
 		err = model.UpdateUserListenedCourseByUserCodeAndCourseId(string(ulStr), code, courseId, lastListenedFileId)
 	} else {
 		userListenedFiles = append(userListenedFiles, request.ListenedFile)
 
-		ulfStr, _ := json.Marshal(userListenedFiles)
+		ulfStr, err := json.Marshal(userListenedFiles)
+		if err != nil {
+			JSONError(c, "Marshal 序列化错误 ", err)
+			return
+		}
 
 		ulcf := &model.UserListenedCourseFile{
 			Code:                     code,
@@ -179,7 +209,7 @@ func UpdateUserListenedFiles(c *gin.Context) {
 
 		if err != nil {
 			tx.Rollback()
-			c.JSON(500, nil)
+			JSONError(c, "创建 user_listened_course 表错误 ", err)
 			return
 		}
 
@@ -470,6 +500,31 @@ func FindCourseByTypeId(c *gin.Context) {
 	c.JSON(200, courseByTypeId)
 }
 
+func GetCourseById(c *gin.Context) {
+	type RequestA struct {
+		Id int `json:"id"`
+	}
+	a := new(RequestA)
+	c.Bind(a)
+
+	//if reauestId == nil {
+	//	c.JSON(501, "c.Request.PostForm[\"id\"] 为空")
+	//	return
+	//}
+	//id, _ := strconv.Atoi(reauestId[0])
+
+	id := a.Id
+	course, err := model.FindCourseById(id)
+
+	if err != nil {
+		c.JSON(501, err)
+		JSONError(c, "FindCourseById err" + err.Error(), err)
+		return
+	}
+
+	JSON(c, "ok", course)
+
+}
 func FindCourseByTypeIdOkhttp(c *gin.Context) {
 	a := new(types.CourseFileRequestOkhttp)
 	c.Bind(a)
@@ -477,12 +532,14 @@ func FindCourseByTypeIdOkhttp(c *gin.Context) {
 	reauestId := c.Request.PostForm["id"]
 	if reauestId == nil {
 		c.JSON(501, "c.Request.PostForm[\"id\"] 为空")
+		return
 	}
 	id, _ := strconv.Atoi(reauestId[0])
 	cc, err := model.FindCourseByTypeId(id)
 
 	if err != nil {
 		c.JSON(501, err)
+		return
 	}
 
 	type Resp struct {
@@ -493,6 +550,7 @@ func FindCourseByTypeIdOkhttp(c *gin.Context) {
 		Course: cc,
 	}
 	c.JSON(200, ret)
+
 }
 
 func AddCourse(c *gin.Context) {

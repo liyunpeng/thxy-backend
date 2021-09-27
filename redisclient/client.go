@@ -321,6 +321,8 @@ func DeleteVcode(key string) (err error) {
 	return
 }
 
+
+
 func SetWXToken(token string) (err error) {
 	client := GetClient()
 	if client == nil {
