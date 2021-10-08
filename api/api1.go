@@ -124,8 +124,7 @@ func FileUpload(context *gin.Context) {
 
 func GetLatestCourseFile(c *gin.Context) {
 
-	cc, err := model.FindCourseFileListLatest(10)
-
+	latestCourseFile, err := model.FindCourseFileListLatest(10)
 	if err != nil {
 		c.JSON(501, err)
 		return
@@ -135,11 +134,11 @@ func GetLatestCourseFile(c *gin.Context) {
 		CourseFileList []*model.CourseFile `json:"courseFileList"`
 	}
 
-	ret1 := &Resp{
-		CourseFileList: cc,
+	resp := &Resp{
+		CourseFileList: latestCourseFile,
 	}
 
-	c.JSON(200, ret1)
+	c.JSON(200, resp)
 }
 
 func UpdateUserListenedFiles(c *gin.Context) {
@@ -196,6 +195,7 @@ func UpdateUserListenedFiles(c *gin.Context) {
 			return
 		}
 
+		// 那些没报上名
 		ulcf := &model.UserListenedCourseFile{
 			Code:                     code,
 			CourseId:                 courseId,
@@ -221,22 +221,14 @@ func UpdateUserListenedFiles(c *gin.Context) {
 }
 
 func GetConfig(c *gin.Context) {
-
-	cc, err := model.FindConfig()
-
+	config, err := model.FindConfig()
 	if err != nil {
 		c.JSON(501, err)
 	}
-
 	type Resp struct {
 		Config *model.Config `json:"config"`
 	}
-
-	//ret1 := &Resp{
-	//	Config: cc,
-	//}
-
-	c.JSON(200, cc)
+	c.JSON(200, config)
 }
 
 func FindCourseFileByCourseId(c *gin.Context) {
@@ -251,6 +243,50 @@ func FindCourseFileByCourseId(c *gin.Context) {
 	}
 
 	c.JSON(200, cc)
+}
+
+func FindCourseFileByCourseIdOkhttpV1(c *gin.Context) {
+	a := new(types.CourseFileRequestOkhttp)
+	c.Bind(a)
+	courseId := c.Request.PostForm["course_id"]
+	if courseId == nil {
+		c.JSON(501, "c.Request.PostForm[\"id\"] 为空")
+		return
+	}
+
+	courseIdInt, _ := strconv.Atoi(courseId[0])
+
+	courseFiles, err := model.FindCourseFileByCourseId(courseIdInt)
+	if err != nil {
+		logger.Warning.Println("FindCourseFileByCourseId err =  ", err)
+		c.JSON(501, err)
+		return
+	}
+	c.JSON(200, courseFiles)
+	return
+}
+
+func FindUserListenedFilesByCodeAndCourseId(c *gin.Context) {
+	a := new(types.CourseFileRequestOkhttp)
+	c.Bind(a)
+
+	userCode := c.Request.PostForm["user_code"]
+	courseId := c.Request.PostForm["course_id"]
+	if courseId == nil {
+		c.JSON(501, "c.Request.PostForm[\"id\"] 为空")
+		return
+	}
+
+	courseIdInt, _ := strconv.Atoi(courseId[0])
+	ulc, err := model.FindUserListenedCourseByUserCodeAndCourseId(userCode[0], courseIdInt)
+	if err != nil {
+		logger.Warning.Println("  FindUserListenedCourseByUserCodeAndCourseId err=", err)
+		c.JSON(501, err)
+		return
+	}
+
+	c.JSON(200, ulc)
+	return
 }
 
 func FindCourseFileByCourseIdOk(c *gin.Context) {
@@ -356,13 +392,13 @@ func GetCourseTypes(c *gin.Context) {
 	a := new(types.CourseTypeRequest)
 	c.Bind(a)
 
-	cc, err := model.FindAllCourseTypes()
+	courseTypes, err := model.FindAllCourseTypes()
 
 	if err != nil {
 		c.JSON(501, err)
 	}
 
-	c.JSON(200, cc)
+	c.JSON(200, courseTypes)
 }
 
 func UpdateCourseType(c *gin.Context) {
@@ -401,7 +437,7 @@ func GetCourseTypesOk(c *gin.Context) {
 	a := new(types.CourseTypeRequest)
 	c.Bind(a)
 
-	cc, err := model.FindAllCourseTypes()
+	courseTypes, err := model.FindAllCourseTypes()
 
 	if err != nil {
 		c.JSON(501, err)
@@ -412,7 +448,7 @@ func GetCourseTypesOk(c *gin.Context) {
 	}
 
 	res := &Resp{
-		CouseTypes: cc,
+		CouseTypes: courseTypes,
 	}
 	c.JSON(200, res)
 }
@@ -482,7 +518,9 @@ func AdminGetAllCourseIds(c *gin.Context) {
 		c.JSON(501, err)
 		return
 	}
-	c.JSON(200, optionItems)
+
+	JSON(c, "ok", optionItems)
+	//c.JSON(200, optionItems)
 	return
 }
 

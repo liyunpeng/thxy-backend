@@ -84,6 +84,8 @@ func InitRouter() *gin.Engine {
 			adminGroup.POST("/getLatest", api.GetLatestCourseFile)
 			adminGroup.POST("/updateUserListenedFiles", api.UpdateUserListenedFiles)
 			adminGroup.POST("/findCourseFileByCourseIdOk", api.FindCourseFileByCourseIdOk)
+			adminGroup.POST("/findCourseFileByCourseIdOkhttpV1", api.FindCourseFileByCourseIdOkhttpV1)
+			adminGroup.POST("/findUserListenedFilesByCodeAndCourseId", api.FindUserListenedFilesByCodeAndCourseId)
 
 			// weixin
 			adminGroup.POST("/wxBind", user.WXBind)
