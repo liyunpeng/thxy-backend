@@ -36,6 +36,8 @@ func Login(c *gin.Context) {
 		api.JSONError(c, "未注册", nil)
 		return
 	}
+
+
 	//log.Info(*admin)
 	// 密码判断
 	if admin.Pwd != utils.Password(pwd) {

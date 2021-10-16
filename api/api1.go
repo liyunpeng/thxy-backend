@@ -262,7 +262,18 @@ func FindCourseFileByCourseIdOkhttpV1(c *gin.Context) {
 		c.JSON(501, err)
 		return
 	}
-	c.JSON(200, courseFiles)
+
+
+	type Resp struct {
+		CourseFileList []*model.CourseFile `json:"courseFileList"`
+	}
+
+	resp := &Resp{
+		CourseFileList: courseFiles,
+	}
+
+
+	c.JSON(200, resp)
 	return
 }
 

@@ -4,8 +4,8 @@ import "github.com/jinzhu/gorm"
 
 type CourseFile struct {
 	Model
-	CourseId         int    `json:"course_id"` // 所在课程id
-	Number           int    `json:"number" gorm:"index:idx_number; comment:'课程编号'"`    // 第几节课
+	CourseId         int    `json:"course_id"`                                      // 所在课程id
+	Number           int    `json:"number" gorm:"index:idx_number; comment:'课程编号'"` // 第几节课
 	ImgFileName      string `json:"img_file_name"`
 	Mp3FileName      string `json:"mp3_file_name" gorm:"size:128"`
 	Introduce        string `json:"introduce"`
@@ -37,7 +37,7 @@ func FindCourseFileByCourseId(courseId int) (a []*CourseFile, err error) {
 }
 
 func FindCourseFileListLatest(limit int) (a []*CourseFile, err error) {
-	err = db.Debug().Model(&CourseFile{}).Select("*").Order(" id desc ").Find(&a).Limit(limit).Error
+	err = db.Debug().Model(&CourseFile{}).Select("*").Order(" id desc ").Limit(limit).Find(&a).Error
 	return
 }
 
