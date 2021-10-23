@@ -94,7 +94,6 @@ func FileDownloadV1(c *gin.Context) {
 
 	c.DataFromReader(http.StatusOK, contentLength, contentType, reader, extraHeaders)
 
-
 }
 
 func FileDownload(c *gin.Context) {
@@ -115,7 +114,6 @@ func FileDownload(c *gin.Context) {
 
 	logger.Info.Println(" 下载文件路径=", filePath)
 	c.File(filePath)
-
 
 }
 
@@ -170,7 +168,7 @@ func UpdateUserListenedFiles(c *gin.Context) {
 	courseId := request.CourseId
 	listenedCourseByUserCodeAndCourseId, err := model.FindUserListenedCourseByUserCodeAndCourseId(code, courseId)
 	if err != nil {
-		JSONError(c, "查找已听记录错误 " , err)
+		JSONError(c, "查找已听记录错误 ", err)
 		return
 	}
 
@@ -284,7 +282,6 @@ func FindCourseFileByCourseIdOkhttpV1(c *gin.Context) {
 		return
 	}
 
-
 	type Resp struct {
 		CourseFileList []*model.CourseFile `json:"courseFileList"`
 	}
@@ -292,7 +289,6 @@ func FindCourseFileByCourseIdOkhttpV1(c *gin.Context) {
 	resp := &Resp{
 		CourseFileList: courseFiles,
 	}
-
 
 	c.JSON(200, resp)
 	return
@@ -588,7 +584,7 @@ func GetCourseById(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(501, err)
-		JSONError(c, "FindCourseById err" + err.Error(), err)
+		JSONError(c, "FindCourseById err"+err.Error(), err)
 		return
 	}
 
@@ -645,10 +641,10 @@ func UpdateCourse(c *gin.Context) {
 	r := new(types.CourseRequest)
 	c.Bind(r)
 	course := &model.Course{
-		//Id: r.Id,
-		Title:       r.Title,
-		StorePath:   r.StorePath,
-		ImgFileName: r.ImgSrc,
+		Title:        r.Title,
+		StorePath:    r.StorePath,
+		ImgFileName:  r.ImgSrc,
+		Introduction: r.Introduction,
 	}
 	err := model.UpdateCourse(course.Title, r.Id)
 	if err != nil {
@@ -715,16 +711,16 @@ func MultiUpload(c *gin.Context) {
 	durationInt, _ := strconv.Atoi(durationStr)
 	courseFiles := make([]*model.CourseFile, 0)
 
-	logger.Info.Println("时长： ",durationInt )
+	logger.Info.Println("时长： ", durationInt)
 
 	for _, fileArr := range files {
 		file := fileArr[0]
 		storePath := setting.TomlConfig.Test.FileStore.FileStorePath
-		dst := storePath + strconv.Itoa(courseId ) + "/mp3"  + "/" + file.Filename
+		dst := storePath + strconv.Itoa(courseId) + "/mp3" + "/" + file.Filename
 		logger.Debug.Println("dst: ", dst)
 		err = c.SaveUploadedFile(file, dst)
 		if err != nil {
-			logger.Error.Println(" 上传mp3文件出错： err= ",err)
+			logger.Error.Println(" 上传mp3文件出错： err= ", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"msg": fmt.Sprintf("ERROR: save file failed. %s", err),
 			})
 			return
@@ -749,8 +745,6 @@ func MultiUpload(c *gin.Context) {
 		//f.Close()
 		//durationMp3,  _ := GetMP3PlayDuration(s1)
 		//logger.Info.Println("filename=",  file.Filename, ",  duration=", durationMp3)
-
-
 
 		regExp := regexp.MustCompile("[0-9]+")
 
@@ -790,7 +784,6 @@ func MultiUpload(c *gin.Context) {
 	}
 
 	tx.Commit()
-
 
 	c.JSON(http.StatusOK, gin.H{
 		"msg":      "upload file success",

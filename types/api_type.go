@@ -14,6 +14,7 @@ type CourseRequest struct {
 	TypeId    int    `json:"type_id"`
 	Title     string `json:"title"`
 	StorePath string `json:"store_path"`
+	Introduction string `json:"introduction"`
 	ImgSrc    string `json:"img_src"`
 }
 
