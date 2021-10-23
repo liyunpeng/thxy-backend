@@ -60,8 +60,8 @@ func UpdateCourse1(c *Course) (err error) {
 	return
 }
 
-func UpdateCourse(title string, id int) (err error) {
-	err = db.Debug().Exec(" update course set title= ? where id = ? ", title, id).Error
+func UpdateCourse(title string, introduction string,  id int) (err error) {
+	err = db.Debug().Exec(" update course set title= ? , introduction = ?  where id = ? ", title, introduction,  id).Error
 	return
 }
 

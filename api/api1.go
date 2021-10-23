@@ -646,7 +646,7 @@ func UpdateCourse(c *gin.Context) {
 		ImgFileName:  r.ImgSrc,
 		Introduction: r.Introduction,
 	}
-	err := model.UpdateCourse(course.Title, r.Id)
+	err := model.UpdateCourse(course.Title, course.Introduction,  r.Id)
 	if err != nil {
 		JSONError(c, "AddCourse err= "+err.Error(), nil)
 		return
