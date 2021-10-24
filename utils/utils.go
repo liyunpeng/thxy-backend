@@ -91,7 +91,14 @@ func GetTimeZeroLastSecond(timeDuration string) string {
 func GetTimeStrFromSecond(seconds int) string {
 	hour := strconv.Itoa(seconds/(60*60))
 	minute := strconv.Itoa(seconds / 60)
-	second := strconv.Itoa(seconds % 60)
+
+	secondInt := seconds % 60
+	var second string
+	if secondInt <= 9 {
+		second = "0" + strconv.Itoa(secondInt)
+	}else{
+		second = strconv.Itoa(secondInt)
+	}
 
 	if second == "0" || second == "" {
 		return minute + ":00"
