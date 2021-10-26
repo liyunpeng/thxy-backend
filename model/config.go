@@ -2,8 +2,9 @@ package model
 
 type Config struct {
 	Model
-	BaseUrl string `json:"base_url"`
-	Mp3SourceRouter string `json:"mp3_source_router"`
+	BaseUrl               string `json:"base_url"`
+	ServiceCurrentVersion string `json:"service_current_version"`
+	Mp3SourceRouter       string `json:"mp3_source_router"`
 }
 
 func (Config) TableName() string {
@@ -14,9 +15,9 @@ func init() {
 	autoMigrateModels = append(autoMigrateModels, &Config{})
 }
 
-func FindConfig() (a *Config, err error) {
-	a = new(Config)
+func FindConfig() (config *Config, err error) {
+	config = new(Config)
 
-	err = db.Debug().Model(&Config{}).Select("*").First(a).Error
+	err = db.Debug().Model(&Config{}).Select("*").First(config).Error
 	return
 }
