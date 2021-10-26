@@ -7,6 +7,7 @@ import (
 	"thxy/api/user"
 	"thxy/logger"
 	"thxy/middleware/cors"
+	"thxy/middleware/session"
 	"thxy/setting"
 )
 
@@ -41,14 +42,15 @@ func InitRouter() *gin.Engine {
 			c.JSON(200, "v1")
 		})
 
+		baseGroup.POST("/adminLogin", admin.Login)
 		adminGroup := baseGroup.Group("/api")
-		//adminGroup.Use(session.CheckAdminSession())
+		adminGroup.Use(session.CheckAdminSession())
 		//adminGroup.Use(admin.AdminAccessRightFilter())
 		{
 			adminGroup.POST("/getConfig", api.GetConfig)
 
 			// login
-			adminGroup.POST("/adminLogin", admin.Login)
+
 			adminGroup.POST("/login", api.Login)
 			adminGroup.POST("/updatePwd", api.UpdatePwd)
 
