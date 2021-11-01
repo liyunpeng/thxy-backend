@@ -25,6 +25,7 @@ func Login(c *gin.Context) {
 		return
 	}
 	//log.Info(account, pwd)
+	//
 	admin, err := model.GetAdminByAccount(account)
 	if err != nil {
 		logger.Error.Println("query user %s failed. cause: %v", account, err)

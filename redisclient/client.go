@@ -46,6 +46,40 @@ func GetClient() *redis.Client {
 	return redClient
 }
 
+func SetFileData(key string, data []byte) (err error) {
+	client := GetClient()
+	if client == nil {
+		err = fmt.Errorf("failed connect to redis")
+		return
+	}
+
+	cliMutex.Lock()
+	defer cliMutex.Unlock()
+
+	err = client.Set(context.Background(), key, data, 0).Err()
+	if err != nil {
+		return fmt.Errorf("设置SIDUSERCODE失败: %v", err)
+	}
+	return
+}
+
+func GetFileData(key string) (data []byte, err error) {
+	client := GetClient()
+	if client == nil {
+		err = fmt.Errorf("failed connect to redis")
+		return
+	}
+
+	cliMutex.Lock()
+	defer cliMutex.Unlock()
+
+	data, err = client.Get(context.Background(), key).Bytes()
+	if err != nil {
+		return nil, fmt.Errorf("设置SIDUSERCODE失败: %v", err)
+	}
+	return
+}
+
 func SetUserSession(key string, value *model.Loginuser) (err error) {
 	client := GetClient()
 	if client == nil {
@@ -320,8 +354,6 @@ func DeleteVcode(key string) (err error) {
 	client.Del(context.Background(), key)
 	return
 }
-
-
 
 func SetWXToken(token string) (err error) {
 	client := GetClient()

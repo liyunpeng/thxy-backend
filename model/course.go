@@ -4,13 +4,13 @@ import "github.com/jinzhu/gorm"
 
 type Course struct {
 	Model
-	Title        string `json:"title" `
-	Introduction string `json:"introduction"`
-	Provider     string `json:"provider"`
-	ImgFileName  string `json:"img_file_name"`
-	StorePath    string `json:"store_path"`
-	TypeId       int    `json:"type_id"`
-	CateLevel    int    `json:"cate_level"` // 1：一级目录， 点中之后， 直接进文件， 2：存在二级目录， 点中之后进下一级
+	Title           string `json:"title" `
+	Introduction    string `json:"introduction"`
+	Provider        string `json:"provider"`
+	ImgFileName     string `json:"img_file_name"`
+	StorePath       string `json:"store_path"`
+	TypeId          int    `json:"type_id"`
+	CateLevel       int    `json:"cate_level"` // 1：一级目录， 点中之后， 直接进文件， 2：存在二级目录， 点中之后进下一级
 }
 
 func (Course) TableName() string {
@@ -31,7 +31,6 @@ type CourseTypeItem struct {
 	TypeId int    `json:"type_id"`
 	Name   string `json:"name"`
 }
-
 
 func GetAllCourseIds() (a []*CourseTitleItem, err error) {
 	err = db.Debug().Raw("select id, type_id, title from course").Find(&a).Error
@@ -60,8 +59,8 @@ func UpdateCourse1(c *Course) (err error) {
 	return
 }
 
-func UpdateCourse(title string, introduction string,  id int) (err error) {
-	err = db.Debug().Exec(" update course set title= ? , introduction = ?  where id = ? ", title, introduction,  id).Error
+func UpdateCourse(title string, introduction string, id int) (err error) {
+	err = db.Debug().Exec(" update course set title= ? , introduction = ?  where id = ? ", title, introduction, id).Error
 	return
 }
 

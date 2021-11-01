@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/tosone/minimp3"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
@@ -13,6 +14,7 @@ import (
 	"strings"
 	"thxy/logger"
 	"thxy/model"
+	"thxy/redisclient"
 	"thxy/setting"
 	"thxy/types"
 	"thxy/utils"
@@ -106,36 +108,90 @@ func FileDownload(c *gin.Context) {
 	fileName := c.Query("file_name")
 
 	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName)) //fmt.Sprintf("attachment; filename=%s", filename)对下载的文件重命名
-	c.Writer.Header().Add("Content-Type", "application/octet-stream")
+	//c.Writer.Header().Add("Content-Type", "application/octet-stream")
+	//w := c.Writer
+	c.Writer.Header().Set("Accept-Ranges", "bytes")
 
 	storePath := setting.TomlConfig.Test.FileStore.FileStorePath
 
 	filePath := storePath + courseId + "/" + fileType + "/" + fileName
 
 	logger.Info.Println(" 下载文件路径=", filePath)
+
+	//c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
+	//c.Writer.Header().Set("Content-Type", "application/zip")
+
 	c.File(filePath)
 
+	if false {
+		key := filePath
+		data, err := redisclient.GetFileData(key)
+		if err != nil {
+			data, err := ioutil.ReadFile(filePath)
+			if err != nil {
+				logger.Error.Println(" 下载错误：", err)
+			} else {
+				err = redisclient.SetFileData(key, data)
+				if err != nil {
+					logger.Error.Println(" redis 写错误 ：", err)
+				}
+				logger.Info.Println("  从硬盘 读到 ", fileType, "文件数据 ")
+				c.File(filePath)
+
+			}
+			return
+		} else {
+			logger.Info.Println(" 从redis 读到 ", fileType, "文件数据, key=", key, ", data长度=", len(data))
+
+			if c.Writer.Header().Get("Content-Encoding") == "" {
+				c.Writer.Header().Set("Content-Length", strconv.FormatInt(int64(len(data)), 10))
+			}
+			//c.Data(http.StatusOK, "application/octet-stream" , data)
+			c.Data(http.StatusOK, "audio", data)
+		}
+	}
 }
 
-// 单文件上传
-func FileUpload(context *gin.Context) {
-	file, err := context.FormFile("file")
+func GetLogList(c *gin.Context) {
+	l, _ := model.GetLogList()
+	JSON(c, "ok", l)
+}
+
+// 单文件上传, 用于客户端log 上传
+func FileUpload(c *gin.Context) {
+	file, err := c.FormFile("file")
 	if err != nil {
 		logger.Info.Println("ERROR: upload file failed. ", err)
-		context.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"msg": fmt.Sprintf("ERROR: upload file failed. %s", err),
 		})
 	}
+
 	dst := fmt.Sprintf(`./` + file.Filename)
-	// 保存文件至指定路径
-	err = context.SaveUploadedFile(file, dst)
+	err = c.SaveUploadedFile(file, dst)
 	if err != nil {
 		logger.Info.Println("ERROR: save file failed. ", err)
-		context.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"msg": fmt.Sprintf("ERROR: save file failed. %s", err),
 		})
 	}
-	context.JSON(http.StatusOK, gin.H{
+
+	systemVersion, _ := c.GetPostForm("system_version")
+	brand, _ := c.GetPostForm("brand")
+	modelVersion, _ := c.GetPostForm("model")
+
+	l := &model.Log{
+		FileName:      file.Filename,
+		SystemVersion: systemVersion,
+		Brand:         brand,
+		ModelVersion:  modelVersion,
+	}
+
+	model.InsertLog(l)
+
+	logger.Info.Println(" FileUpload 文件上传 ")
+
+	c.JSON(http.StatusOK, gin.H{
 		"msg":      "file upload succ.",
 		"filepath": dst,
 	})
@@ -244,9 +300,11 @@ func GetConfig(c *gin.Context) {
 	if err != nil {
 		c.JSON(501, err)
 	}
+
 	type Resp struct {
 		Config *model.Config `json:"config"`
 	}
+
 	c.JSON(200, config)
 }
 
@@ -646,7 +704,7 @@ func UpdateCourse(c *gin.Context) {
 		ImgFileName:  r.ImgSrc,
 		Introduction: r.Introduction,
 	}
-	err := model.UpdateCourse(course.Title, course.Introduction,  r.Id)
+	err := model.UpdateCourse(course.Title, course.Introduction, r.Id)
 	if err != nil {
 		JSONError(c, "AddCourse err= "+err.Error(), nil)
 		return
@@ -771,6 +829,7 @@ func MultiUpload(c *gin.Context) {
 
 	db := model.GetDB()
 	tx := db.Begin()
+	// 文件 上传完成后，再保存到数据库
 	for _, v := range courseFiles {
 		err = model.InsertCourseFile(tx, v)
 		if err != nil {

@@ -7,7 +7,6 @@ import (
 	"thxy/api/user"
 	"thxy/logger"
 	"thxy/middleware/cors"
-	"thxy/middleware/session"
 	"thxy/setting"
 )
 
@@ -44,25 +43,27 @@ func InitRouter() *gin.Engine {
 
 		baseGroup.POST("/adminLogin", admin.Login)
 		adminGroup := baseGroup.Group("/api")
-		adminGroup.Use(session.CheckAdminSession())
+		//adminGroup.Use(session.CheckAdminSession())
 		//adminGroup.Use(admin.AdminAccessRightFilter())
 		{
 			adminGroup.POST("/getConfig", api.GetConfig)
 
 			// login
-
 			adminGroup.POST("/login", api.Login)
 			adminGroup.POST("/updatePwd", api.UpdatePwd)
 
-			// upload
+			// log
 			adminGroup.POST("/fileUpload", api.FileUpload)
+			adminGroup.POST("/logList", api.GetLogList)
+
+			// upload
 			adminGroup.POST("/multiUpload", api.MultiUpload)
 
 			// download
 			adminGroup.GET("/fileDownload", api.FileDownload)
 			adminGroup.GET("/apkUpload", api.ApkUpload)
 
-			// courseType 
+			// courseType
 			adminGroup.POST("/getCourseTypes", api.GetCourseTypes)
 			adminGroup.POST("/getCourseTypesOk", api.GetCourseTypesOk)
 			adminGroup.POST("/findCourseByTypeId", api.FindCourseByTypeId)

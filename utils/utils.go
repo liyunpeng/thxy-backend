@@ -66,8 +66,6 @@ func GenUserCode() string {
 	return fmt.Sprintf("%v%v", CurrentTimestamp(), GenRandNumStr(6))
 }
 
-
-
 // GenRandStr 生成随机字符串 数字+大写+小写
 func GenRandStr(size int) string {
 	str := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
