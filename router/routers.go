@@ -55,6 +55,7 @@ func InitRouter() *gin.Engine {
 			// log
 			adminGroup.POST("/fileUpload", api.FileUpload)
 			adminGroup.POST("/logList", api.GetLogList)
+			adminGroup.GET("/logDownload", api.LogDownload)
 
 			// upload
 			adminGroup.POST("/multiUpload", api.MultiUpload)

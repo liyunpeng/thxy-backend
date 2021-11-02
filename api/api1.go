@@ -94,9 +94,33 @@ func FileDownloadV1(c *gin.Context) {
 		"Content-Disposition": `attachment; filename="gopher.png"`,
 	}
 
+
 	c.DataFromReader(http.StatusOK, contentLength, contentType, reader, extraHeaders)
 
 }
+
+func LogDownload(c *gin.Context) {
+	//r := new(types.DownloadRequest)
+	//c.Bind(r)
+
+	// 组合成文件路径， 如：./data/37/mp3/music.mp3
+	fileName := c.Query("file_name")
+
+	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName)) //fmt.Sprintf("attachment; filename=%s", filename)对下载的文件重命名
+	//c.Writer.Header().Add("Content-Type", "application/octet-stream")
+	//w := c.Writer
+	c.Writer.Header().Set("Accept-Ranges", "bytes")
+
+
+	//storePath := setting.TomlConfig.Test.FileStore.FileStorePath
+
+	filePath := "./" + fileName
+
+	logger.Info.Println(" log 下载文件路径=", filePath)
+
+	c.File(filePath)
+}
+
 
 func FileDownload(c *gin.Context) {
 	//r := new(types.DownloadRequest)
@@ -122,6 +146,7 @@ func FileDownload(c *gin.Context) {
 	//c.Writer.Header().Set("Content-Type", "application/zip")
 
 	c.File(filePath)
+
 
 	if false {
 		key := filePath
@@ -179,15 +204,17 @@ func FileUpload(c *gin.Context) {
 	systemVersion, _ := c.GetPostForm("system_version")
 	brand, _ := c.GetPostForm("brand")
 	modelVersion, _ := c.GetPostForm("model")
+	appVersion, _ := c.GetPostForm("app_version")
 
-	l := &model.Log{
+	log := &model.Log{
 		FileName:      file.Filename,
 		SystemVersion: systemVersion,
 		Brand:         brand,
+		AppVersion:    appVersion,
 		ModelVersion:  modelVersion,
 	}
 
-	model.InsertLog(l)
+	model.InsertLog(log)
 
 	logger.Info.Println(" FileUpload 文件上传 ")
 
