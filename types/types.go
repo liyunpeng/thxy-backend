@@ -97,3 +97,8 @@ type OptionItem struct {
 	Label    string     `json:"label"`
 	Children []Children `json:"children"`
 }
+
+
+type CountType struct {
+	Count int `json:"count"`
+}

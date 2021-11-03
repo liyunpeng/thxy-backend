@@ -4,13 +4,14 @@ import "github.com/jinzhu/gorm"
 
 type Course struct {
 	Model
-	Title           string `json:"title" `
-	Introduction    string `json:"introduction"`
-	Provider        string `json:"provider"`
-	ImgFileName     string `json:"img_file_name"`
-	StorePath       string `json:"store_path"`
-	TypeId          int    `json:"type_id"`
-	CateLevel       int    `json:"cate_level"` // 1：一级目录， 点中之后， 直接进文件， 2：存在二级目录， 点中之后进下一级
+	Title        string `json:"title" `
+	Introduction string `json:"introduction"`
+	Provider     string `json:"provider"`
+	ImgFileName  string `json:"img_file_name"`
+	StorePath    string `json:"store_path"`
+	TypeId       int    `json:"type_id"`
+	FileCount    int    `json:"file_count"`  // 该课程含有的文件个数
+	CateLevel    int    `json:"cate_level"` // 1：一级目录， 点中之后， 直接进文件， 2：存在二级目录， 点中之后进下一级
 }
 
 func (Course) TableName() string {
@@ -61,6 +62,11 @@ func UpdateCourse1(c *Course) (err error) {
 
 func UpdateCourse(title string, introduction string, id int) (err error) {
 	err = db.Debug().Exec(" update course set title= ? , introduction = ?  where id = ? ", title, introduction, id).Error
+	return
+}
+
+func UpdateCourseFileCount(id, fileCount int ) (err error) {
+	err = db.Debug().Exec(" update course set file_count = ?  where id = ? ", fileCount, id).Error
 	return
 }
 

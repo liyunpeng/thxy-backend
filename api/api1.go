@@ -871,10 +871,22 @@ func MultiUpload(c *gin.Context) {
 
 	tx.Commit()
 
-	c.JSON(http.StatusOK, gin.H{
-		"msg":      "upload file success",
-		"filepath": setting.TomlConfig.Test.FileStore.FileStorePath,
-	})
+	fileCount, err := model.FindCourseFileCountByCourseId(courseId)
+	if err != nil {
+		JSONError(c,  " 查询出错："+ err.Error(), nil)
+		return
+	}
+	err = model.UpdateCourseFileCount(courseId, fileCount)
+	if err != nil {
+		JSONError(c,  " course表更新文件数目出错："+ err.Error(), nil)
+		return
+	}else{
+		c.JSON(http.StatusOK, gin.H{
+			"msg":      "upload file success",
+			"filepath": setting.TomlConfig.Test.FileStore.FileStorePath,
+		})
+	}
+
 	return
 }
 
