@@ -343,14 +343,23 @@ func FindCourseFileByCourseIdAndUpdateVersion(c *gin.Context) {
 		return
 	}
 
-	courseFileList, err := model.FindCourseFileByCourseId(commonRequest.Id)
+	type Resp struct {
+		CourseFileList []*model.CourseFile `json:"courseFileList"`
+		UpdateVersion  int                 `json:"update_version"`
+	}
 
+	courseFileList, err := model.FindCourseFileByCourseId(commonRequest.Id)
 	if err != nil {
 		c.JSON(501, err)
 		return
 	}
 
-	c.JSON(200, courseFileList)
+	resp := &Resp{
+		CourseFileList: courseFileList,
+		UpdateVersion:  course.UpdateVersion,
+	}
+
+	c.JSON(200, resp)
 }
 
 func FindCourseFileByCourseId(c *gin.Context) {
@@ -896,6 +905,7 @@ func MultiUpload(c *gin.Context) {
 	//	return
 	//}
 	//err = model.UpdateCourseFileCount(courseId, fileCount)
+
 	err = model.UpdateCourseUpdateVersion(courseId)
 	if err != nil {
 		JSONError(c, " course表更新文件数目出错："+err.Error(), nil)
