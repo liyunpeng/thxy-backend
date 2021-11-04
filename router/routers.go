@@ -85,6 +85,7 @@ func InitRouter() *gin.Engine {
 			// courseFile
 			adminGroup.POST("/findCourseFileById", api.FindCourseFileById)
 			adminGroup.POST("/findCourseFileByCourseId", api.FindCourseFileByCourseId)
+			adminGroup.POST("/findCourseFileByCourseIdAndUpdateVersion", api.FindCourseFileByCourseIdAndUpdateVersion)
 			adminGroup.POST("/getLatest", api.GetLatestCourseFile)
 			adminGroup.POST("/updateUserListenedFiles", api.UpdateUserListenedFiles)
 			adminGroup.POST("/findCourseFileByCourseIdOk", api.FindCourseFileByCourseIdOk)

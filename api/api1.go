@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/tosone/minimp3"
+	//"github.com/tosone/minimp3"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -48,15 +48,15 @@ func UpdatePwd(c *gin.Context) {
 
 }
 
-func GetMP3PlayDuration(mp3Data []byte) (seconds int, err error) {
-	dec, _, err := minimp3.DecodeFull(mp3Data)
-	if err != nil {
-		return 0, err
-	}
-	// 音乐时长 = (文件大小(byte) - 128(ID3信息)) * 8(to bit) / (码率(kbps b:bit) * 1000)(kilo bit to bit)
-	seconds = (len(mp3Data) - 128) * 8 / (dec.Kbps * 1000)
-	return seconds, nil
-}
+//func GetMP3PlayDuration(mp3Data []byte) (seconds int, err error) {
+//	dec, _, err := minimp3.DecodeFull(mp3Data)
+//	if err != nil {
+//		return 0, err
+//	}
+//	// 音乐时长 = (文件大小(byte) - 128(ID3信息)) * 8(to bit) / (码率(kbps b:bit) * 1000)(kilo bit to bit)
+//	seconds = (len(mp3Data) - 128) * 8 / (dec.Kbps * 1000)
+//	return seconds, nil
+//}
 
 func ApkUpload(c *gin.Context) {
 	//r := new(types.DownloadRequest)
@@ -94,7 +94,6 @@ func FileDownloadV1(c *gin.Context) {
 		"Content-Disposition": `attachment; filename="gopher.png"`,
 	}
 
-
 	c.DataFromReader(http.StatusOK, contentLength, contentType, reader, extraHeaders)
 
 }
@@ -111,7 +110,6 @@ func LogDownload(c *gin.Context) {
 	//w := c.Writer
 	c.Writer.Header().Set("Accept-Ranges", "bytes")
 
-
 	//storePath := setting.TomlConfig.Test.FileStore.FileStorePath
 
 	filePath := "./" + fileName
@@ -120,7 +118,6 @@ func LogDownload(c *gin.Context) {
 
 	c.File(filePath)
 }
-
 
 func FileDownload(c *gin.Context) {
 	//r := new(types.DownloadRequest)
@@ -146,7 +143,6 @@ func FileDownload(c *gin.Context) {
 	//c.Writer.Header().Set("Content-Type", "application/zip")
 
 	c.File(filePath)
-
 
 	if false {
 		key := filePath
@@ -335,18 +331,40 @@ func GetConfig(c *gin.Context) {
 	c.JSON(200, config)
 }
 
-func FindCourseFileByCourseId(c *gin.Context) {
-	a := new(types.CourseTypeRequest)
-	c.Bind(a)
+func FindCourseFileByCourseIdAndUpdateVersion(c *gin.Context) {
+	commonRequest := new(types.CommonRequest)
 
-	cc, err := model.FindCourseFileByCourseId(a.Id)
+	c.Bind(commonRequest)
+
+	course, err := model.FindCourseById(commonRequest.Id)
+
+	if course.UpdateVersion == commonRequest.UpdateVersion {
+		c.JSON(200, nil)
+		return
+	}
+
+	courseFileList, err := model.FindCourseFileByCourseId(commonRequest.Id)
 
 	if err != nil {
 		c.JSON(501, err)
 		return
 	}
 
-	c.JSON(200, cc)
+	c.JSON(200, courseFileList)
+}
+
+func FindCourseFileByCourseId(c *gin.Context) {
+	commonRequest := new(types.CommonRequest)
+	c.Bind(commonRequest)
+
+	courseFileList, err := model.FindCourseFileByCourseId(commonRequest.Id)
+
+	if err != nil {
+		c.JSON(501, err)
+		return
+	}
+
+	c.JSON(200, courseFileList)
 }
 
 func FindCourseFileByCourseIdOkhttpV1(c *gin.Context) {
@@ -489,7 +507,7 @@ func FindCourseFileByCourseIdOk(c *gin.Context) {
 	c.JSON(200, ret)
 }
 func FindCourseFileById(c *gin.Context) {
-	a := new(types.CourseTypeRequest)
+	a := new(types.CommonRequest)
 	c.Bind(a)
 
 	cc, err := model.FindCourseFileById(a.Id)
@@ -502,7 +520,7 @@ func FindCourseFileById(c *gin.Context) {
 }
 
 func GetCourseTypes(c *gin.Context) {
-	a := new(types.CourseTypeRequest)
+	a := new(types.CommonRequest)
 	c.Bind(a)
 
 	courseTypes, err := model.FindAllCourseTypes()
@@ -515,7 +533,7 @@ func GetCourseTypes(c *gin.Context) {
 }
 
 func UpdateCourseType(c *gin.Context) {
-	r := new(types.CourseTypeRequest)
+	r := new(types.CommonRequest)
 	c.Bind(r)
 
 	err := model.UpdateCourseTypeById(r.Name, r.Id)
@@ -530,7 +548,7 @@ func UpdateCourseType(c *gin.Context) {
 }
 
 func AddCourseType(c *gin.Context) {
-	r := new(types.CourseTypeRequest)
+	r := new(types.CommonRequest)
 	c.Bind(r)
 
 	courseType := &model.CourseType{
@@ -547,7 +565,7 @@ func AddCourseType(c *gin.Context) {
 }
 
 func GetCourseTypesOk(c *gin.Context) {
-	a := new(types.CourseTypeRequest)
+	a := new(types.CommonRequest)
 	c.Bind(a)
 
 	courseTypes, err := model.FindAllCourseTypes()
@@ -588,7 +606,7 @@ func AdminGetAllCourseType(c *gin.Context) {
 	return
 }
 func AdminGetAllCourseIds(c *gin.Context) {
-	request := new(types.CourseTypeRequest)
+	request := new(types.CommonRequest)
 	c.Bind(request)
 
 	courseGroup, err := model.GetAllCourseGroup()
@@ -638,7 +656,7 @@ func AdminGetAllCourseIds(c *gin.Context) {
 }
 
 func FindCourseByTypeId(c *gin.Context) {
-	request := new(types.CourseTypeRequest)
+	request := new(types.CommonRequest)
 	c.Bind(request)
 
 	courseByTypeId, err := model.FindCourseByTypeId(request.Id)
@@ -871,16 +889,18 @@ func MultiUpload(c *gin.Context) {
 
 	tx.Commit()
 
-	fileCount, err := model.FindCourseFileCountByCourseId(courseId)
+	//fileCount, err := model.FindCourseFileCountByCourseId(courseId)
+	//fileCount, err := model.FindCourseFileCountByCourseId(courseId)
+	//if err != nil {
+	//	JSONError(c, " 查询出错："+err.Error(), nil)
+	//	return
+	//}
+	//err = model.UpdateCourseFileCount(courseId, fileCount)
+	err = model.UpdateCourseUpdateVersion(courseId)
 	if err != nil {
-		JSONError(c,  " 查询出错："+ err.Error(), nil)
+		JSONError(c, " course表更新文件数目出错："+err.Error(), nil)
 		return
-	}
-	err = model.UpdateCourseFileCount(courseId, fileCount)
-	if err != nil {
-		JSONError(c,  " course表更新文件数目出错："+ err.Error(), nil)
-		return
-	}else{
+	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"msg":      "upload file success",
 			"filepath": setting.TomlConfig.Test.FileStore.FileStorePath,

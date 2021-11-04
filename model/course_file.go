@@ -39,11 +39,14 @@ func FindCourseFileByCourseId(courseId int) (a []*CourseFile, err error) {
 	return
 }
 
-func FindCourseFileCountByCourseId(courseId int) ( count int, err error) {
+func FindCourseFileByCourseIdAndCourseFileId(courseId, courseFileId  int) (a []*CourseFile, err error) {
+	err = db.Debug().Model(&CourseFile{}).Select("*").Where("course_id = ? and id >= ? ", courseId, courseFileId).Find(&a).Error
+	return
+}
 
+func FindCourseFileCountByCourseId(courseId int) ( count int, err error) {
 	c := new( types.CountType)
 	err = db.Debug().Table("course_file").Select("count(*) as count").Where("course_id = ? ", courseId).First(c).Error
-
 	count = c.Count
 	return
 }

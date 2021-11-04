@@ -4,18 +4,20 @@ type Response1 struct {
 	AccessToken string `json:"access_token"`
 }
 
-type CourseTypeRequest struct {
-	Id   int    `json:"id"` // id 为course type id
-	Name string `json:"name"`
+type CommonRequest struct {
+	Id            int    `json:"id"` // id 为course id 或为 type id
+	Name          string `json:"name"`
+	UpdateVersion int    `json:"update_version"`
+	//MaxCourseFileId int    `json:"max_course_file_id"`
 }
 
 type CourseRequest struct {
-	Id        int    `json:"id"`
-	TypeId    int    `json:"type_id"`
-	Title     string `json:"title"`
-	StorePath string `json:"store_path"`
+	Id           int    `json:"id"`
+	TypeId       int    `json:"type_id"`
+	Title        string `json:"title"`
+	StorePath    string `json:"store_path"`
 	Introduction string `json:"introduction"`
-	ImgSrc    string `json:"img_src"`
+	ImgSrc       string `json:"img_src"`
 }
 
 type CourseFileRequestOkhttp struct {
