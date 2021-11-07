@@ -5,10 +5,10 @@ type Response1 struct {
 }
 
 type CommonRequest struct {
-	Id            int    `json:"id"` // id 为course id 或为 type id
-	Name          string `json:"name"`
-	UpdateVersion int    `json:"update_version"`
-	//MaxCourseFileId int    `json:"max_course_file_id"`
+	Id                  int    `json:"id"`                    // id 为course id 或为 type id
+	Name                string `json:"name"`                  // 课程名
+	UpdateVersion       int    `json:"update_version"`        // 课程列表文件增加，或文件名修改， 增一
+	CourseUpdateVersion int    `json:"course_update_version"` // 课程列表增加，或课程名修改， 增一
 }
 
 type CourseRequest struct {

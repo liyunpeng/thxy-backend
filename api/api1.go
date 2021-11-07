@@ -331,6 +331,38 @@ func GetConfig(c *gin.Context) {
 	c.JSON(200, config)
 }
 
+func FindCourseByTypeIdAndUpdateVersion(c *gin.Context) {
+	commonRequest := new(types.CommonRequest)
+
+	c.Bind(commonRequest)
+
+	courseType, err := model.FindCourseTypeById(commonRequest.Id)
+
+	logger.Info.Println("手机端courseUpdateVersion=",  commonRequest.CourseUpdateVersion, ", 服务端CourseUpdateVersion=", courseType.CourseUpdateVersion)
+	if courseType.CourseUpdateVersion == commonRequest.CourseUpdateVersion {
+		c.JSON(200, nil)
+		return
+	}
+
+	type Resp struct {
+		CourseList    []*model.Course `json:"course_list"`
+		UpdateVersion int             `json:"course_update_version"`
+	}
+
+	courseList, err := model.FindCourseByTypeId(commonRequest.Id)
+	if err != nil {
+		c.JSON(501, err)
+		return
+	}
+
+	resp := &Resp{
+		CourseList:    courseList,
+		UpdateVersion: courseType.CourseUpdateVersion,
+	}
+
+	c.JSON(200, resp)
+}
+
 func FindCourseFileByCourseIdAndUpdateVersion(c *gin.Context) {
 	commonRequest := new(types.CommonRequest)
 
@@ -704,8 +736,8 @@ func GetCourseById(c *gin.Context) {
 
 }
 func FindCourseByTypeIdOkhttp(c *gin.Context) {
-	a := new(types.CourseFileRequestOkhttp)
-	c.Bind(a)
+	okhttpRequest := new(types.CourseFileRequestOkhttp)
+	c.Bind(okhttpRequest)
 
 	reauestId := c.Request.PostForm["id"]
 	if reauestId == nil {
@@ -713,7 +745,7 @@ func FindCourseByTypeIdOkhttp(c *gin.Context) {
 		return
 	}
 	id, _ := strconv.Atoi(reauestId[0])
-	cc, err := model.FindCourseByTypeId(id)
+	couseList, err := model.FindCourseByTypeId(id)
 
 	if err != nil {
 		c.JSON(501, err)
@@ -721,14 +753,13 @@ func FindCourseByTypeIdOkhttp(c *gin.Context) {
 	}
 
 	type Resp struct {
-		Course []*model.Course `json:"courseList"`
+		CourseList []*model.Course `json:"course_list"`
 	}
 
 	ret := &Resp{
-		Course: cc,
+		CourseList: couseList,
 	}
 	c.JSON(200, ret)
-
 }
 
 func AddCourse(c *gin.Context) {
@@ -744,26 +775,43 @@ func AddCourse(c *gin.Context) {
 		return
 	}
 
+	err = model.UpdateCourseTypeUpdateVersionById(r.TypeId)
+	if err != nil {
+		JSONError(c, "AddCourse UpdateCourseTypeUpdateVersionById err= "+err.Error(), nil)
+		return
+	}
+
 	JSON(c, "ok", nil)
 
 	return
 }
 
 func UpdateCourse(c *gin.Context) {
-	r := new(types.CourseRequest)
-	c.Bind(r)
+	courseRequest := new(types.CourseRequest)
+	c.Bind(courseRequest)
 	course := &model.Course{
-		Title:        r.Title,
-		StorePath:    r.StorePath,
-		ImgFileName:  r.ImgSrc,
-		Introduction: r.Introduction,
+		Title:        courseRequest.Title,
+		StorePath:    courseRequest.StorePath,
+		ImgFileName:  courseRequest.ImgSrc,
+		Introduction: courseRequest.Introduction,
 	}
-	err := model.UpdateCourse(course.Title, course.Introduction, r.Id)
+	err := model.UpdateCourse(course.Title, course.Introduction, courseRequest.Id)
 	if err != nil {
 		JSONError(c, "AddCourse err= "+err.Error(), nil)
 		return
 	}
 
+	cc, err := model.FindCourseById(courseRequest.Id)
+	if err != nil {
+		JSONError(c, "FindCourseById err= "+err.Error(), nil)
+		return
+	}
+
+	err = model.UpdateCourseTypeUpdateVersionById(cc.TypeId)
+	if err != nil {
+		JSONError(c, "UpdateCourseTypeUpdateVersionById err= "+err.Error(), nil)
+		return
+	}
 	JSON(c, "ok", nil)
 	return
 }
