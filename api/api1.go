@@ -20,6 +20,11 @@ import (
 	"thxy/utils"
 )
 
+/*
+ 要与阿弥陀佛的佛国的气场， 相匹配， 才能去
+
+
+ */
 func Login(c *gin.Context) {
 
 	a := types.Response1{
@@ -965,6 +970,8 @@ func MultiUpload(c *gin.Context) {
 }
 
 func CoursePictureUpload(c *gin.Context) {
+	var imgDir string
+	var mp3Dir string
 	r := new(types.MultiUploadRequest)
 	c.Bind(r)
 
@@ -977,30 +984,23 @@ func CoursePictureUpload(c *gin.Context) {
 		return
 	}
 	// 多个文件上传，要用同一个key
-	//files := form.File["files"]
+	//formFiles := form.File["formFiles"]
 	//for k, v := range form {
 	//	fmt.Println("key is: ", k)
 	//	fmt.Println("val is: ", v)
 	//}
 
-	files := form.File
+	formFiles := form.File
 	courseTitle := c.Request.PostForm["course_title"][0]
 	//courseId, _ := strconv.Atoi(courseIdStr)
 
 	durationStr := c.Request.PostForm["type_id"][0]
 	durationInt, _ := strconv.Atoi(durationStr)
 	courses := make([]*model.Course, 0)
-	for _, fileArr := range files {
+
+
+	for _, fileArr := range formFiles {
 		file := fileArr[0]
-
-		//regExp := regexp.MustCompile("[0-9]+")
-		//
-		//titleArr := strings.Split(file.Filename, ".")
-		//title := titleArr[0]
-
-		//numberStr := regExp.FindAllString(title, -1)
-		//number, err := strconv.Atoi(numberStr[0])
-
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"msg": fmt.Sprintf("ERROR: Atoi failed. %s", err),
@@ -1018,10 +1018,8 @@ func CoursePictureUpload(c *gin.Context) {
 	db := model.GetDB()
 	tx := db.Begin()
 
-	var imgDir string
-	var mp3Dir string
 	for _, v := range courses {
-		err = model.InsertCourseT(tx, v)
+		err = model.InsertCourseWithTransaction(tx, v)
 		if err != nil {
 			logger.Error.Println("InsertCourseFile err=", err)
 			tx.Rollback()
@@ -1042,21 +1040,33 @@ func CoursePictureUpload(c *gin.Context) {
 			tx.Rollback()
 		}
 		err = os.MkdirAll(mp3Dir, os.ModePerm)
-	}
 
-	tx.Commit()
 
-	for _, filea := range files {
-		file := filea[0]
-		dst := imgDir + file.Filename
-		logger.Debug.Println("dst: ", dst)
-		err = c.SaveUploadedFile(file, dst)
+		destinationPath := imgDir + v.ImgFileName
+		logger.Debug.Println("destinationPath: ", destinationPath)
+		err = c.SaveUploadedFile(v.ImgFileName, destinationPath)
 		if err != nil {
 			JSON(c, " SaveUploadedFile err= "+err.Error(), nil)
 			logger.Error.Println(" 创建失败： SaveUploadedFile err=  ", err)
 			return
 		}
 	}
+	tx.Commit()
+
+
+	for _, fileArr := range formFiles {
+		file := fileArr[0]
+		destinationPath := imgDir + file.Filename
+		logger.Debug.Println("destinationPath: ", destinationPath)
+		err = c.SaveUploadedFile(file, destinationPath)
+		if err != nil {
+			JSON(c, " SaveUploadedFile err= "+err.Error(), nil)
+			logger.Error.Println(" 创建失败： SaveUploadedFile err=  ", err)
+			return
+		}
+	}
+
+	logger.Info.Println(" 成功创建课程， 课程名=" )
 
 	JSON(c, "ok", nil)
 	return

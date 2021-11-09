@@ -49,7 +49,7 @@ func InsertCourse(c *Course) (err error) {
 	return
 }
 
-func InsertCourseT(tx *gorm.DB, c *Course) (err error) {
+func InsertCourseWithTransaction(tx *gorm.DB, c *Course) (err error) {
 	err = tx.Debug().Create(c).Error
 	return
 }
