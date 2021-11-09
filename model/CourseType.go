@@ -3,7 +3,7 @@ package model
 type CourseType struct {
 	Model
 	Name                string `json:"name"`
-	CourseUpdateVersion int    `json:"course_update_version"`
+	CourseUpdateVersion int    `json:"course_update_version" gorm:"default:0"`
 	//Introduce string `json:"introduce"`
 	//Provider  string `json:"provider"`
 }
@@ -15,6 +15,8 @@ func (CourseType) TableName() string {
 func init() {
 	autoMigrateModels = append(autoMigrateModels, &CourseType{})
 }
+
+
 
 func FindCourseTypeById(typeId int) (courseType *CourseType, err error) {
 	courseType = new(CourseType)

@@ -10,7 +10,7 @@ type Course struct {
 	ImgFileName   string `json:"img_file_name"`
 	StorePath     string `json:"store_path"`
 	TypeId        int    `json:"type_id"`
-	UpdateVersion int    `json:"update_version"`
+	UpdateVersion int    `json:"update_version"  gorm:"default:0"`
 	CateLevel     int    `json:"cate_level"` // 1：一级目录， 点中之后， 直接进文件， 2：存在二级目录， 点中之后进下一级
 }
 
@@ -38,10 +38,9 @@ func GetAllCourseIds() (a []*CourseTitleItem, err error) {
 	return
 }
 
-func GetAllCourseGroup() (a []*CourseTypeItem, err error) {
-	s := "select  c.type_id, t.name from course c inner join course_type t on c.type_id = t.id group by c.type_id"
-	//s := "select c.id,  c.type_id, t.name from course c inner join course_type t on c.type_id = t.id group by t.id "
-	err = db.Debug().Raw(s).Find(&a).Error
+func GetAllCourseGroup() (courseTypeItems []*CourseTypeItem, err error) {
+	sql := "select  c.type_id, t.name from course c inner join course_type t on c.type_id = t.id group by c.type_id"
+	err = db.Debug().Raw(sql).Find(&courseTypeItems).Error
 	return
 }
 
@@ -70,12 +69,10 @@ func UpdateCourseFileCount(id, fileCount int) (err error) {
 	return
 }
 
-
 func UpdateCourseUpdateVersion(id int) (err error) {
 	err = db.Debug().Exec(" update course set update_version=update_version+1  where id = ? ", id).Error
 	return
 }
-
 
 func DeleteCourse(id int) (err error) {
 	err = db.Debug().Exec("delete from course where id = ? ", id).Error
@@ -87,13 +84,13 @@ func DeleteCourseType(id int) (err error) {
 	return
 }
 
-func FindCourseByTypeId(typeId int) (a []*Course, err error) {
-	err = db.Debug().Model(&Course{}).Select("*").Where("type_id = ? ", typeId).Find(&a).Error
+func FindCourseByTypeId(typeId int) (courses []*Course, err error) {
+	err = db.Debug().Model(&Course{}).Select("*").Where("type_id = ? ", typeId).Find(&courses).Error
 	return
 }
 
-func FindCourseById(courseId int) (a *Course, err error) {
-	a = new(Course)
-	err = db.Debug().Model(&Course{}).Select("*").Where("id = ? ", courseId).First(a).Error
+func FindCourseById(courseId int) (course *Course, err error) {
+	course = new(Course)
+	err = db.Debug().Model(&Course{}).Select("*").Where("id = ? ", courseId).First(course).Error
 	return
 }

@@ -7,6 +7,7 @@ import (
 	"thxy/api/user"
 	"thxy/logger"
 	"thxy/middleware/cors"
+	"thxy/middleware/session"
 	"thxy/setting"
 )
 
@@ -19,6 +20,7 @@ func InitRouter() *gin.Engine {
 	//	fmt.Printf("app runmode: %s %s", conf.App.Runmode, settings.RunmodeProd)
 	//	gin.SetMode(gin.ReleaseMode)
 	//}
+
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
@@ -42,61 +44,74 @@ func InitRouter() *gin.Engine {
 		})
 
 		baseGroup.POST("/adminLogin", admin.Login)
-		adminGroup := baseGroup.Group("/api")
-		//adminGroup.Use(session.CheckAdminSession())
-		//adminGroup.Use(admin.AdminAccessRightFilter())
-		{
-			adminGroup.POST("/getConfig", api.GetConfig)
 
+		adminGroup := baseGroup.Group("/adminApi")
+		adminGroup.Use(session.CheckAdminSession())
+		{
 			// login
 			adminGroup.POST("/login", api.Login)
 			adminGroup.POST("/updatePwd", api.UpdatePwd)
 
 			// log
-			adminGroup.POST("/fileUpload", api.FileUpload)
 			adminGroup.POST("/logList", api.GetLogList)
 			adminGroup.GET("/logDownload", api.LogDownload)
 
 			// upload
 			adminGroup.POST("/multiUpload", api.MultiUpload)
 
-			// download
-			adminGroup.GET("/fileDownload", api.FileDownload)
-			adminGroup.GET("/apkUpload", api.ApkUpload)
-
-			// courseType
+			// course type
 			adminGroup.POST("/getCourseTypes", api.GetCourseTypes)
-			adminGroup.POST("/getCourseTypesOk", api.GetCourseTypesOk)
-			adminGroup.POST("/findCourseByTypeId", api.FindCourseByTypeId)
 			adminGroup.POST("/updateCourseType", api.UpdateCourseType)
 			adminGroup.POST("/addCourseType", api.AddCourseType)
 			adminGroup.POST("/deleteCourseType", api.DeleteCourseType)
+			adminGroup.POST("/coursePictureUpload", api.CoursePictureUpload)
 
 			// course
-			adminGroup.POST("/findCourseByTypeIdOk", api.FindCourseByTypeIdOkhttp)
-			adminGroup.POST("/getCourseById", api.GetCourseById)
 			adminGroup.POST("/adminGetAllCourseIds", api.AdminGetAllCourseIds)
 			adminGroup.POST("/adminGetAllCourseType", api.AdminGetAllCourseType)
 			adminGroup.POST("/addCourse", api.AddCourse)
 			adminGroup.POST("/updateCourse", api.UpdateCourse)
 			adminGroup.POST("/deleteCourse", api.DeleteCourse)
-			adminGroup.POST("/coursePictureUpload", api.CoursePictureUpload)
+
+			adminGroup.POST("/findCourseByTypeId", api.FindCourseByTypeId)
+
+			// course file
+			adminGroup.POST("/findCourseFileByCourseId", api.FindCourseFileByCourseId)
+		}
+
+		userGroup := baseGroup.Group("/api")
+
+		{
+			userGroup.POST("/getConfig", api.GetConfig)
+
+			// log
+			userGroup.POST("/fileUpload", api.FileUpload)
+
+			// download
+			userGroup.GET("/fileDownload", api.FileDownload)
+			userGroup.GET("/apkUpload", api.ApkUpload)
+
+			// courseType
+			userGroup.POST("/getCourseTypesOk", api.GetCourseTypesOk)
+
+			// course
+			userGroup.POST("/findCourseByTypeIdOk", api.FindCourseByTypeIdOkhttp)
+			userGroup.POST("/getCourseById", api.GetCourseById)
+			userGroup.POST("/findCourseByTypeIdAndUpdateVersion", api.FindCourseByTypeIdAndUpdateVersion)
 
 			// courseFile
-			adminGroup.POST("/findCourseFileById", api.FindCourseFileById)
-			adminGroup.POST("/findCourseFileByCourseId", api.FindCourseFileByCourseId)
-			adminGroup.POST("/findCourseFileByCourseIdAndUpdateVersion", api.FindCourseFileByCourseIdAndUpdateVersion)
-			adminGroup.POST("/findCourseByTypeIdAndUpdateVersion", api.FindCourseByTypeIdAndUpdateVersion)
-			adminGroup.POST("/getLatest", api.GetLatestCourseFile)
-			adminGroup.POST("/updateUserListenedFiles", api.UpdateUserListenedFiles)
-			adminGroup.POST("/findCourseFileByCourseIdOk", api.FindCourseFileByCourseIdOk)
-			adminGroup.POST("/findCourseFileByCourseIdOkhttpV1", api.FindCourseFileByCourseIdOkhttpV1)
-			adminGroup.POST("/findUserListenedFilesByCodeAndCourseId", api.FindUserListenedFilesByCodeAndCourseId)
+			userGroup.POST("/findCourseFileById", api.FindCourseFileById)
+			userGroup.POST("/findCourseFileByCourseIdAndUpdateVersion", api.FindCourseFileByCourseIdAndUpdateVersion)
+			userGroup.POST("/getLatest", api.GetLatestCourseFile)
+			userGroup.POST("/updateUserListenedFiles", api.UpdateUserListenedFiles)
+			userGroup.POST("/findCourseFileByCourseIdOk", api.FindCourseFileByCourseIdOk)
+			userGroup.POST("/findCourseFileByCourseIdOkhttpV1", api.FindCourseFileByCourseIdOkhttpV1)
+			userGroup.POST("/findUserListenedFilesByCodeAndCourseId", api.FindUserListenedFilesByCodeAndCourseId)
 
 			// weixin
-			adminGroup.POST("/wxBind", user.WXBind)
-			adminGroup.POST("/wxLogin", user.WXLogin)
-			adminGroup.POST("/wxToken", user.WXToken)
+			userGroup.POST("/wxBind", user.WXBind)
+			userGroup.POST("/wxLogin", user.WXLogin)
+			userGroup.POST("/wxToken", user.WXToken)
 		}
 	}
 

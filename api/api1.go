@@ -584,6 +584,12 @@ func UpdateCourseType(c *gin.Context) {
 		return
 	}
 
+	err = model.UpdateConfigUpdateVersion()
+	if err != nil {
+		JSONError(c, "UpdateConfigUpdateVersion err= "+err.Error(), nil)
+		return
+	}
+
 	JSON(c, "ok", nil)
 	return
 }
@@ -601,6 +607,13 @@ func AddCourseType(c *gin.Context) {
 		JSONError(c, "AddCourseType err="+err.Error(), err)
 		return
 	}
+
+	err = model.UpdateConfigUpdateVersion()
+	if err != nil {
+		JSONError(c, "UpdateConfigUpdateVersion err= "+err.Error(), nil)
+		return
+	}
+
 
 	JSON(c, "ok", nil)
 }
@@ -812,6 +825,9 @@ func UpdateCourse(c *gin.Context) {
 		JSONError(c, "UpdateCourseTypeUpdateVersionById err= "+err.Error(), nil)
 		return
 	}
+
+
+
 	JSON(c, "ok", nil)
 	return
 }
@@ -840,6 +856,14 @@ func DeleteCourseType(c *gin.Context) {
 		JSONError(c, "DeleteCourseType err= "+err.Error(), nil)
 		return
 	}
+
+	err = model.UpdateConfigUpdateVersion()
+	if err != nil {
+		JSONError(c, "UpdateConfigUpdateVersion err= "+err.Error(), nil)
+		return
+	}
+
+
 	JSON(c, "ok", nil)
 	return
 }
@@ -886,26 +910,6 @@ func MultiUpload(c *gin.Context) {
 			return
 		}
 
-		//f, _  := file.Open()
-		//
-		//ss := make([]byte, 1024*1024)
-		////a, _ := f.Read(ss)
-		//f.Read(ss)
-		//offset := 0
-		//var s1 []byte
-		//for {
-		//	len1, _ := f.ReadAt(ss, int64(offset))
-		//	offset = offset + len1
-		//	if len1 == 0 {
-		//		break
-		//	}
-		//	s1 = append(s1, ss...)
-		//	//fmt.Println( string(ss))
-		//}
-		//f.Close()
-		//durationMp3,  _ := GetMP3PlayDuration(s1)
-		//logger.Info.Println("filename=",  file.Filename, ",  duration=", durationMp3)
-
 		regExp := regexp.MustCompile("[0-9]+")
 
 		titleArr := strings.Split(file.Filename, ".")
@@ -945,14 +949,6 @@ func MultiUpload(c *gin.Context) {
 	}
 
 	tx.Commit()
-
-	//fileCount, err := model.FindCourseFileCountByCourseId(courseId)
-	//fileCount, err := model.FindCourseFileCountByCourseId(courseId)
-	//if err != nil {
-	//	JSONError(c, " 查询出错："+err.Error(), nil)
-	//	return
-	//}
-	//err = model.UpdateCourseFileCount(courseId, fileCount)
 
 	err = model.UpdateCourseUpdateVersion(courseId)
 	if err != nil {
