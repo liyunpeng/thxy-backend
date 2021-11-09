@@ -969,7 +969,111 @@ func MultiUpload(c *gin.Context) {
 	return
 }
 
-func CoursePictureUpload(c *gin.Context) {
+func CourseSave(c *gin.Context) {
+	var imgDir string
+	var mp3Dir string
+	r := new(types.MultiUploadRequest)
+	c.Bind(r)
+
+	logger.Info.Println("r:", r)
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": fmt.Sprintf("ERROR: parse form failed. %s", err),
+		})
+		return
+	}
+	// 多个文件上传，要用同一个key
+	//formFiles := form.File["formFiles"]
+	//for k, v := range form {
+	//	fmt.Println("key is: ", k)
+	//	fmt.Println("val is: ", v)
+	//}
+
+	formFiles := form.File
+	courseTitle := c.Request.PostForm["course_title"][0]
+	//courseId, _ := strconv.Atoi(courseIdStr)
+
+	durationStr := c.Request.PostForm["type_id"][0]
+	durationInt, _ := strconv.Atoi(durationStr)
+	courses := make([]*model.Course, 0)
+
+
+	for _, fileArr := range formFiles {
+		file := fileArr[0]
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"msg": fmt.Sprintf("ERROR: Atoi failed. %s", err),
+			})
+		}
+
+		course := &model.Course{
+			TypeId:      durationInt,
+			Title:       courseTitle,
+			ImgFileName: file.Filename,
+		}
+		courses = append(courses, course)
+	}
+
+	db := model.GetDB()
+	tx := db.Begin()
+
+	for _, v := range courses {
+		err = model.InsertCourseWithTransaction(tx, v)
+		if err != nil {
+			logger.Error.Println("InsertCourseFile err=", err)
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"msg": fmt.Sprintf("ERROR: InsertCourseFileinsert failed. %s", err),
+			})
+			return
+		}
+
+		imgDir = utils.GetDir(v.Id, "img")
+		mp3Dir = utils.GetDir(v.Id, "mp3")
+
+		logger.Info.Println(v.Title, " 创建img目录：", imgDir)
+		logger.Info.Println(v.Title, " 创建mp3目录：", mp3Dir)
+
+		err = os.MkdirAll(imgDir, os.ModePerm)
+		if err != nil {
+			tx.Rollback()
+		}
+		err = os.MkdirAll(mp3Dir, os.ModePerm)
+
+
+		destinationPath := imgDir + v.ImgFileName
+		logger.Debug.Println("destinationPath: ", destinationPath)
+		err = c.SaveUploadedFile(v.ImgFileName, destinationPath)
+		if err != nil {
+			JSON(c, " SaveUploadedFile err= "+err.Error(), nil)
+			logger.Error.Println(" 创建失败： SaveUploadedFile err=  ", err)
+			return
+		}
+	}
+	tx.Commit()
+
+
+	for _, fileArr := range formFiles {
+		file := fileArr[0]
+		destinationPath := imgDir + file.Filename
+		logger.Debug.Println("destinationPath: ", destinationPath)
+		err = c.SaveUploadedFile(file, destinationPath)
+		if err != nil {
+			JSON(c, " SaveUploadedFile err= "+err.Error(), nil)
+			logger.Error.Println(" 创建失败： SaveUploadedFile err=  ", err)
+			return
+		}
+	}
+
+	logger.Info.Println(" 成功创建课程， 课程名=" )
+
+	JSON(c, "ok", nil)
+	return
+}
+
+
+func CourseEdit(c *gin.Context) {
 	var imgDir string
 	var mp3Dir string
 	r := new(types.MultiUploadRequest)

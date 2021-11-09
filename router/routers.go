@@ -64,7 +64,8 @@ func InitRouter() *gin.Engine {
 			adminGroup.POST("/updateCourseType", api.UpdateCourseType)
 			adminGroup.POST("/addCourseType", api.AddCourseType)
 			adminGroup.POST("/deleteCourseType", api.DeleteCourseType)
-			adminGroup.POST("/coursePictureUpload", api.CoursePictureUpload)
+			adminGroup.POST("/courseSave", api.CourseSave)
+			adminGroup.POST("/courseEdit", api.CourseEdit)
 
 			// course
 			adminGroup.POST("/adminGetAllCourseIds", api.AdminGetAllCourseIds)
